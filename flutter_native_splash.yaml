@@ -1,0 +1,8 @@
+flutter_native_splash:
+  image: images/ls_logo.png  # Replace with the path to your image asset
+  color: FFFFFF                  # Background color
+  image_background_color: F8F8F8  # Background color behind the image
+  image_mode: scaleToFill        # Image rendering mode
+  image_gravity: center          # Image gravity
+  full_screen: false             # Set to true if you want a full-screen image
+  duration_in_seconds: 2         # Duration in seconds
