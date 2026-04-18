@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'skeleton_loader.dart';
 
@@ -29,15 +30,36 @@ class SmartImage extends StatelessWidget {
       return _buildPlaceholder(context);
     }
 
-    // In a real app, you might want to prepend your base URL here
-    // if the backend returns relative paths.
+    String formattedUrl = imageUrl!;
     
+    // Fix relative image paths returned by Laravel
+    if (!formattedUrl.startsWith('http') && !formattedUrl.startsWith('file://')) {
+      String baseUrl = dotenv.env['API_BASE_URL'] ?? 'https://api.5str.xyz';
+      if (baseUrl.trim().isEmpty) {
+        baseUrl = 'https://api.5str.xyz';
+      }
+      
+      // Ensure baseUrl doesn't end with a slash if we're adding one
+      if (baseUrl.endsWith('/')) {
+        baseUrl = baseUrl.substring(0, baseUrl.length - 1);
+      }
+      
+      // Laravel standardizes public uploads in the /storage/ directory
+      if (!formattedUrl.startsWith('storage/')) {
+        if (formattedUrl.startsWith('/')) {
+          formattedUrl = formattedUrl.substring(1);
+        }
+        formattedUrl = 'storage/$formattedUrl';
+      }
+      formattedUrl = '$baseUrl/$formattedUrl';
+    }
+
     return ClipRRect(
       borderRadius: isRound
           ? BorderRadius.circular((width ?? height ?? 100) / 2)
           : BorderRadius.circular(borderRadius),
       child: CachedNetworkImage(
-        imageUrl: imageUrl!,
+        imageUrl: formattedUrl,
         width: width,
         height: height,
         fit: fit,

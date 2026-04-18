@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../core/config/api_config.dart';
 import '../../core/network/dio_client.dart';
@@ -57,6 +58,8 @@ class HomeRepository {
           'radius': radius,
         },
       );
+
+      debugPrint('HOME API RAW: ${response.data}');
 
       final data = _extractData(response);
 

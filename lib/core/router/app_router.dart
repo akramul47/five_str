@@ -11,6 +11,7 @@ import '../../presentation/screens/profile/profile_screen.dart';
 import '../../presentation/screens/auth/login_screen.dart';
 import '../../presentation/screens/auth/register_screen.dart';
 import '../../presentation/screens/search/search_screen.dart';
+import '../../data/models/business_model.dart';
 import '../../presentation/screens/business/business_detail_screen.dart';
 import '../../presentation/screens/attraction/attraction_detail_screen.dart';
 import '../../presentation/screens/category/category_screen.dart';
@@ -74,7 +75,8 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/business/:id',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => BusinessDetailScreen(
-          id: int.parse(state.pathParameters['id']!),
+          businessId: int.parse(state.pathParameters['id']!),
+          initialBusiness: state.extra as BusinessModel?,
         ),
       ),
       GoRoute(

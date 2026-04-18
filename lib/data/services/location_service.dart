@@ -49,48 +49,8 @@ class LocationService {
 
   /// Initialize and get the current location.
   Future<UserLocation> initialize() async {
-    try {
-      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
-        debugPrint('LocationService: Location services disabled');
-        return _defaultLocation;
-      }
-
-      var permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.denied ||
-            permission == LocationPermission.deniedForever) {
-          debugPrint('LocationService: Permission denied');
-          return _defaultLocation;
-        }
-      }
-
-      final position = await Geolocator.getCurrentPosition(
-        locationSettings: const LocationSettings(
-          accuracy: LocationAccuracy.high,
-          timeLimit: Duration(seconds: 10),
-        ),
-      );
-
-      _lastPosition = position;
-      _lastFetchTime = DateTime.now();
-
-      if (!AppConfig.isInBangladesh(position.latitude, position.longitude)) {
-        debugPrint('LocationService: Location outside Bangladesh');
-        return _defaultLocation;
-      }
-
-      return UserLocation(
-        latitude: position.latitude,
-        longitude: position.longitude,
-        timestamp: position.timestamp.millisecondsSinceEpoch,
-        source: 'gps',
-      );
-    } catch (e) {
-      debugPrint('LocationService: Error getting location: $e');
-      return _defaultLocation;
-    }
+    // DEV OVERRIDE: Hardcoding to Chittagong to guarantee the user sees local test data.
+    return _defaultLocation;
   }
 
   /// Force refresh the GPS location.

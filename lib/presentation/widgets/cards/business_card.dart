@@ -26,18 +26,21 @@ class BusinessCard extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: InkWell(
-        onTap: () => context.push('/business/${business.id}'),
+        onTap: () => context.push('/business/${business.id}', extra: business),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Cover Image
             Stack(
               children: [
-                SmartImage(
-                  imageUrl: business.coverUrl ?? business.logoUrl,
-                  height: 160,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
+                Hero(
+                  tag: 'business-image-${business.id}',
+                  child: SmartImage(
+                    imageUrl: business.coverUrl ?? business.logoUrl,
+                    height: 160,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                  ),
                 ),
                 if (business.isFeatured)
                   Positioned(

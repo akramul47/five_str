@@ -41,14 +41,15 @@ class HomeNotifier extends StateNotifier<HomeState> {
   }
 
   void _init() {
-    // Listen to location changes to refresh home data
     _ref.listen<LocationState>(locationProvider, (previous, next) {
-      if (previous?.apiCoordinates != next.apiCoordinates) {
+      // If location finishes loading or coordinates change, fetch new data
+      if (!next.isLoading &&
+          (previous?.isLoading == true ||
+              previous?.apiCoordinates != next.apiCoordinates)) {
         loadData(isRefresh: true);
       }
     });
-    
-    // Initial load
+
     final location = _ref.read(locationProvider);
     if (!location.isLoading) {
       loadData();

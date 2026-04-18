@@ -240,7 +240,23 @@ class BusinessDetailModel extends BusinessModel {
       totalReviews: base.totalReviews,
       isVerified: base.isVerified,
       isFeatured: base.isFeatured,
-      images: base.images,
+      images: (json['images'] is List && (json['images'] as List).isNotEmpty)
+          ? BusinessImages(
+              logo: (json['images'] as List).firstWhere(
+                (e) => e['is_logo'] == true,
+                orElse: () => (json['images'] as List).first,
+              )['image_url'],
+              cover: (json['images'] as List).firstWhere(
+                (e) => e['is_logo'] == false,
+                orElse: () => (json['images'] as List).first,
+              )['image_url'],
+            )
+          : (json['cover_image'] != null || json['logo_image'] != null)
+              ? BusinessImages(
+                  cover: json['cover_image']?.toString() ?? json['logo_image']?.toString(),
+                  logo: json['logo_image']?.toString() ?? json['cover_image']?.toString(),
+                )
+              : base.images,
       category: base.category,
       isNational: base.isNational,
       serviceCoverage: base.serviceCoverage,
