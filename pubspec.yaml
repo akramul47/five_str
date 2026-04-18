@@ -82,3 +82,13 @@ flutter:
     - assets/images/
     - assets/icons/
     - assets/fonts/
+
+  fonts:
+    - family: BentonSans
+      fonts:
+        - asset: "assets/fonts/BentonSans Light.otf"
+          weight: 300
+        - asset: "assets/fonts/BentonSans Regular.otf"
+          weight: 400
+        - asset: "assets/fonts/BentonSans Medium.otf"
+          weight: 500
