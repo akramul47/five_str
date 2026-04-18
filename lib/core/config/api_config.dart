@@ -67,6 +67,7 @@ class ApiConfig {
   static const String reviews = '$apiPrefix/reviews';
   static String reviewDetail(int id) => '$apiPrefix/reviews/$id';
   static String reviewVote(int id) => '$apiPrefix/reviews/$id/vote';
+  static String reviewVoteRemove(int id) => '$apiPrefix/reviews/$id/vote';
 
   // ── User ──
   static const String userFavorites = '$apiPrefix/user/favorites';

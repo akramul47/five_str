@@ -1,5 +1,3 @@
-/// Custom exceptions for the app.
-
 class ApiException implements Exception {
   final String message;
   final int? statusCode;
