@@ -1,0 +1,1380 @@
+# 5SRT Business Discovery Platform
+
+<p align="center">
+    <img src="https://img.shields.io/badge/Laravel-11.x-red?style=for-the-badge&logo=laravel" alt="Laravel">
+    <img src="https://img.shields.io/badge/PHP-8.2%2B-blue?style=for-the-badge&logo=php" alt="PHP">
+    <img src="https://img.shields.io/badge/Filament-3.x-orange?style=for-the-badge" alt="Filament">
+    <img src="https://img.shields.io/badge/MySQL-8.0-blue?style=for-the-badge&logo=mysql" alt="MySQL">
+</p>
+
+<p align="center">
+    A comprehensive business discovery platform that connects users with local businesses, services, and offerings. Built with Laravel and featuring a modern admin panel powered by Filament.
+</p>
+
+## 🚀 Features
+
+### 🏢 Business Management
+- **Business Registration & Profiles**: Complete business information management
+- **Category-based Organization**: Hierarchical categorization system
+- **Location-based Services**: Geographic discovery with radius-based search
+- **Business Verification**: Admin-controlled verification system
+- **Multi-media Support**: Image galleries, logos, and cover photos
+
+### 🔍 Advanced Search & Discovery
+- **Universal Search API**: Search businesses and offerings simultaneously
+- **Intelligent Autocomplete**: Real-time search suggestions
+- **Location-based Filtering**: GPS-powered nearby business discovery
+- **Advanced Filtering**: Rating, price, features, and availability filters
+- **Popular Searches**: Trending search terms analytics
+
+### 📊 Analytics & Insights
+- **Trending Data**: Business and category trending analysis
+- **Search Analytics**: Comprehensive search behavior tracking
+- **View Tracking**: Business and offering view analytics
+- **Performance Metrics**: Discovery scores and engagement tracking
+
+### 👥 User Management
+- **Role-based Access Control**: Super-admin, admin, moderator, business-owner, user roles
+- **Approval Workflows**: Business owner changes require admin approval
+- **User Authentication**: Sanctum-powered API authentication
+- **Profile Management**: Complete user profile system
+- **Smart Notifications**: Role-based notification system with admin controls
+
+### 🛠 Admin Panel (Filament)
+- **Business Management**: Full CRUD operations with role-based access
+- **User Administration**: User management with role assignments
+- **Analytics Dashboard**: Comprehensive analytics and reporting
+- **Content Moderation**: Review and approval systems
+- **Notification Center**: Database notifications with real-time polling
+- **Profile Management**: Complete admin profile system
+
+### 📱 Mobile-Friendly API
+- **RESTful API**: Clean, optimized API responses
+- **Location Services**: GPS integration for mobile apps
+- **Optimized Responses**: Minimal data transfer for mobile performance
+- **Authentication**: Token-based authentication with Sanctum
+
+## 🛠 Technology Stack
+
+- **Backend Framework**: Laravel 11.x
+- **Admin Panel**: Filament 3.x with database notifications
+- **Authentication**: Laravel Sanctum
+- **Permissions**: Spatie Laravel Permission
+- **Database**: MySQL 8.0+
+- **PHP Version**: 8.2+
+
+## 📋 Prerequisites
+
+- PHP 8.2 or higher
+- Composer
+- MySQL 8.0 or higher
+- Node.js & NPM (for assets compilation)
+
+## 🚀 Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Naimur404/5str-backend.git
+   cd 5str-backend
+   ```
+
+2. **Install PHP dependencies**
+   ```bash
+   composer install
+   ```
+
+3. **Environment setup**
+   ```bash
+   cp .env.example .env
+   php artisan key:generate
+   ```
+
+4. **Configure your `.env` file**
+   ```env
+   APP_NAME="5SRT Business Discovery"
+   APP_URL=http://localhost:8000
+   
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=5srt_backend
+   DB_USERNAME=your_username
+   DB_PASSWORD=your_password
+   ```
+
+5. **Database setup**
+   ```bash
+   php artisan migrate:fresh --seed
+   ```
+
+6. **Install frontend dependencies and compile assets**
+   ```bash
+   npm install
+   npm run build
+   ```
+
+7. **Start the development server**
+   ```bash
+   php artisan serve
+   ```
+
+## 🗄 Database Seeding
+
+The project includes comprehensive seeders for development and testing:
+
+```bash
+# Full database reset with sample data
+php artisan migrate:fresh --seed
+
+# Generate trending data
+php artisan analytics:generate-test-data --count=50
+
+# Create test notifications
+php artisan notification:test --title="Test Notification" --message="Testing the notification system"
+```
+
+### Default Admin Account
+- **Email**: admin@5srt.com
+- **Password**: password
+
+## 📚 API Documentation
+
+### Base URL
+```
+http://localhost:8000/api/v1
+```
+
+### Authentication
+The API uses Laravel Sanctum for authentication. Include the token in the Authorization header:
+```
+Authorization: Bearer {your-token}
+```
+
+## 🔐 Authentication Endpoints
+
+### Register User
+**POST** `/api/v1/register`
+
+**Request Payload:**
+```json
+{
+    "name": "John Doe",
+    "email": "john@example.com",
+    "phone": "+1234567890",
+    "password": "password123",
+    "password_confirmation": "password123",
+    "city": "Dhaka",
+    "current_latitude": 23.7465,
+    "current_longitude": 90.3754
+}
+```
+
+**Success Response (201):**
+```json
+{
+    "success": true,
+    "message": "User registered successfully",
+    "data": {
+        "user": {
+            "id": 123,
+            "name": "John Doe",
+            "email": "john@example.com",
+            "phone": "+1234567890",
+            "city": "Dhaka",
+            "current_latitude": "23.7465",
+            "current_longitude": "90.3754",
+            "email_verified_at": null,
+            "created_at": "2025-08-23T10:30:00.000000Z",
+            "updated_at": "2025-08-23T10:30:00.000000Z"
+        },
+        "token": "1|eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+    }
+}
+```
+
+### Login User
+**POST** `/api/v1/login`
+
+**Request Payload:**
+```json
+{
+    "email": "john@example.com",
+    "password": "password123"
+}
+```
+
+**Success Response (200):**
+```json
+{
+    "success": true,
+    "message": "Login successful",
+    "data": {
+        "user": {
+            "id": 123,
+            "name": "John Doe",
+            "email": "john@example.com",
+            "phone": "+1234567890",
+            "city": "Dhaka",
+            "current_latitude": "23.7465",
+            "current_longitude": "90.3754",
+            "roles": ["user"]
+        },
+        "token": "2|eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+    }
+}
+```
+
+### Get Authenticated User
+**GET** `/api/v1/auth/user`
+
+**Headers:**
+```
+Authorization: Bearer {your-token}
+```
+
+**Success Response (200):**
+```json
+{
+    "success": true,
+    "data": {
+        "user": {
+            "id": 123,
+            "name": "John Doe",
+            "email": "john@example.com",
+            "phone": "+1234567890",
+            "city": "Dhaka",
+            "profile_image": "/storage/profiles/avatar.jpg",
+            "current_latitude": "23.7465",
+            "current_longitude": "90.3754",
+            "trust_level": 3,
+            "total_points": 485,
+            "total_favorites": 12,
+            "total_reviews": 8,
+            "user_level": {
+                "level": 3,
+                "level_name": "Active Explorer",
+                "level_description": "Engaged user discovering local businesses",
+                "total_score": 95.5,
+                "progress_to_next_level": 65.2,
+                "points_contribution": 48.5,
+                "activity_contribution": 28.0,
+                "trust_contribution": 18.0,
+                "next_level_threshold": 120
+            },
+            "is_active": true,
+            "roles": ["user"],
+            "email_verified_at": "2025-08-23T10:30:00.000000Z",
+            "created_at": "2025-08-23T10:30:00.000000Z"
+        }
+    }
+}
+```
+
+### Logout
+**POST** `/api/v1/auth/logout`
+
+**Headers:**
+```
+Authorization: Bearer {your-token}
+```
+
+**Success Response (200):**
+```json
+{
+    "success": true,
+    "message": "Logged out successfully"
+}
+```
+
+## 🏠 Home & Discovery Endpoints
+
+### Get Home Screen Data
+**GET** `/api/v1/home`
+
+**Query Parameters:**
+- `latitude` (optional): User's latitude
+- `longitude` (optional): User's longitude  
+- `radius` (optional): Search radius in km (default: 10)
+
+**Example Request:**
+```bash
+curl "http://localhost:8000/api/v1/home?latitude=23.7465&longitude=90.3754&radius=15"
+```
+
+**Success Response (200):**
+```json
+{
+    "success": true,
+    "data": {
+        "banners": [
+            {
+                "id": 1,
+                "title": "Welcome to 5SRT",
+                "description": "Discover local businesses",
+                "image_url": "https://example.com/banner.jpg",
+                "link": "https://example.com",
+                "is_active": true,
+                "sort_order": 1
+            }
+        ],
+        "top_services": [
+            {
+                "id": 1,
+                "name": "Restaurants",
+                "slug": "restaurants",
+                "icon_image": "https://example.com/icon.jpg",
+                "color_code": "#FF5722",
+                "business_count": 45
+            }
+        ],
+        "popular_nearby": [
+            {
+                "id": 2,
+                "business_name": "Star Kabab & Restaurant",
+                "slug": "star-kabab-restaurant",
+                "description": "Traditional Bengali and Chinese cuisine",
+                "area": "Dhanmondi",
+                "city": "Dhaka",
+                "overall_rating": "3.50",
+                "total_reviews": 11,
+                "is_verified": true,
+                "distance_km": "2.5",
+                "category": {
+                    "id": 1,
+                    "name": "Restaurants",
+                    "slug": "restaurants"
+                }
+            }
+        ],
+        "featured_offerings": [
+            {
+                "id": 1,
+                "offering_name": "Chicken Biryani",
+                "offering_type": "menu_item",
+                "price": "350.00",
+                "is_popular": true,
+                "business": {
+                    "id": 2,
+                    "business_name": "Star Kabab & Restaurant",
+                    "area": "Dhanmondi"
+                }
+            }
+        ],
+        "top_national_brands": [
+            {
+                "section_title": "Top Ice Cream Brands",
+                "section_type": "ice_cream",
+                "businesses": [
+                    {
+                        "id": 101,
+                        "business_name": "Polar Ice Cream",
+                        "slug": "polar-ice-cream",
+                        "is_national": true,
+                        "service_coverage": "nationwide",
+                        "overall_rating": "4.50",
+                        "total_reviews": 245
+                    }
+                ]
+            }
+        ]
+    }
+}
+```
+
+### Get Trending Data
+**GET** `/api/v1/trending`
+
+**Query Parameters:**
+- `type` (optional): 'businesses' or 'categories' (default: 'all')
+- `limit` (optional): Number of results (default: 10)
+
+**Success Response (200):**
+```json
+{
+    "success": true,
+    "data": {
+        "trending_businesses": [
+            {
+                "id": 2,
+                "business_name": "Star Kabab & Restaurant",
+                "trend_score": 85.5,
+                "category": "Restaurants",
+                "total_views": 245,
+                "recent_searches": 32
+            }
+        ],
+        "trending_categories": [
+            {
+                "id": 1,
+                "name": "Restaurants",
+                "trend_score": 92.3,
+                "business_count": 45,
+                "recent_searches": 128
+            }
+        ]
+    }
+}
+```
+
+### Get National Brands for Home Page
+**GET** `/api/v1/home/national-brands`
+
+**Description:** Get top national brands categorized by type (ice cream, biscuits, beverages, etc.) for home page display.
+
+**Example Request:**
+```bash
+curl "http://localhost:8000/api/v1/home/national-brands"
+```
+
+**Success Response (200):**
+```json
+{
+    "success": true,
+    "message": "National brands retrieved successfully",
+    "data": {
+        "national_brand_sections": [
+            {
+                "section_title": "Top Ice Cream Brands",
+                "section_type": "ice_cream",
+                "section_description": "Popular ice cream brands across Bangladesh",
+                "businesses": [
+                    {
+                        "id": 101,
+                        "business_name": "Polar Ice Cream",
+                        "slug": "polar-ice-cream",
+                        "description": "Premium ice cream manufacturer serving nationwide",
+                        "overall_rating": "4.50",
+                        "total_reviews": 245,
+                        "is_national": true,
+                        "service_coverage": "nationwide",
+                        "business_model": "manufacturing",
+                        "category": {
+                            "id": 5,
+                            "name": "Food & Beverages"
+                        },
+                        "logo_image": "https://example.com/polar-logo.jpg"
+                    }
+                ]
+            },
+            {
+                "section_title": "Top Biscuit & Snack Brands",
+                "section_type": "biscuits_snacks",
+                "section_description": "Popular biscuit and snack brands nationwide",
+                "businesses": [
+                    {
+                        "id": 102,
+                        "business_name": "Olympic Biscuits",
+                        "slug": "olympic-biscuits",
+                        "description": "Leading biscuit manufacturer in Bangladesh",
+                        "overall_rating": "4.30",
+                        "total_reviews": 189,
+                        "is_national": true,
+                        "service_coverage": "nationwide",
+                        "business_model": "manufacturing",
+                        "category": {
+                            "id": 5,
+                            "name": "Food & Beverages"
+                        },
+                        "logo_image": "https://example.com/olympic-logo.jpg"
+                    }
+                ]
+            },
+            {
+                "section_title": "Top Food Manufacturers",
+                "section_type": "food_manufacturers",
+                "section_description": "Leading food and beverage manufacturers",
+                "businesses": [
+                    {
+                        "id": 103,
+                        "business_name": "Pran Foods Limited",
+                        "slug": "pran-foods-limited",
+                        "description": "Largest food and beverage manufacturer in Bangladesh",
+                        "overall_rating": "4.60",
+                        "total_reviews": 412,
+                        "is_national": true,
+                        "service_coverage": "nationwide",
+                        "business_model": "manufacturing",
+                        "category": {
+                            "id": 5,
+                            "name": "Food & Beverages"
+                        },
+                        "logo_image": "https://example.com/pran-logo.jpg"
+                    }
+                ]
+            }
+        ],
+        "total_sections": 3,
+        "total_businesses": 6
+    }
+}
+```
+
+## 🔍 Search Endpoints
+
+### Universal Search
+**GET** `/api/v1/search`
+
+**Query Parameters:**
+- `q` (optional): Search term
+- `type` (optional): 'all', 'businesses', 'offerings' (default: 'all')
+- `latitude` (optional): User's latitude
+- `longitude` (optional): User's longitude
+- `radius` (optional): Search radius in km (default: 20)
+- `category_id` (optional): Filter by category ID
+- `page` (optional): Page number (default: 1)
+- `limit` (optional): Results per page (default: 20)
+- `sort` (optional): 'relevance', 'rating', 'distance', 'name', 'popular', 'newest'
+- `min_rating` (optional): Minimum rating filter
+- `is_verified` (optional): Show only verified businesses
+
+**Example Request:**
+```bash
+curl "http://localhost:8000/api/v1/search?q=restaurant&type=all&latitude=23.7465&longitude=90.3754&sort=rating&limit=10"
+```
+
+**Success Response (200):**
+```json
+{
+    "success": true,
+    "data": {
+        "search_term": "restaurant",
+        "search_type": "all",
+        "total_results": 1,
+        "results": {
+            "businesses": {
+                "data": [
+                    {
+                        "id": 2,
+                        "business_name": "Star Kabab & Restaurant",
+                        "slug": "star-kabab-restaurant",
+                        "description": "Traditional Bengali and Chinese cuisine",
+                        "area": "Dhanmondi",
+                        "city": "Dhaka",
+                        "overall_rating": "3.50",
+                        "total_reviews": 11,
+                        "is_verified": true,
+                        "distance_km": "2.5",
+                        "category": {
+                            "id": 1,
+                            "name": "Restaurants",
+                            "slug": "restaurants"
+                        },
+                        "type": "business"
+                    }
+                ],
+                "pagination": {
+                    "current_page": 1,
+                    "last_page": 1,
+                    "per_page": 20,
+                    "total": 1,
+                    "has_more": false
+                }
+            },
+            "offerings": {
+                "data": [],
+                "pagination": {
+                    "current_page": 1,
+                    "last_page": 1,
+                    "per_page": 20,
+                    "total": 0,
+                    "has_more": false
+                }
+            }
+        }
+    }
+}
+```
+
+### Search Suggestions
+**GET** `/api/v1/search/suggestions`
+
+**Query Parameters:**
+- `q` (required): Search term (minimum 2 characters)
+- `category_id` (optional): Filter by category
+- `limit` (optional): Max suggestions (default: 10)
+
+**Success Response (200):**
+```json
+{
+    "success": true,
+    "data": [
+        {
+            "suggestion": "Star Kabab & Restaurant",
+            "type": "business",
+            "id": 2
+        },
+        {
+            "suggestion": "Restaurants",
+            "type": "category",
+            "id": 1
+        }
+    ]
+}
+```
+
+## 🏢 Business Endpoints
+
+### Business Types Supported
+The platform supports two types of businesses:
+
+1. **Local Businesses**: Location-based businesses (restaurants, shops, salons, etc.)
+   - Have specific latitude/longitude coordinates
+   - Serve customers in nearby areas
+   - Filtered by location radius
+
+2. **National Businesses**: Country-wide businesses and brands
+   - Serve entire Bangladesh or multiple regions
+   - Include food brands (Polar, Pran, Akij), biscuit companies (Tiger, Olympic), delivery services, online platforms
+   - Available regardless of user location
+   - Business models: `manufacturing`, `brand`, `online_service`, `delivery_only`
+
+### Get Business List
+**GET** `/api/v1/businesses`
+
+**Query Parameters:**
+- `latitude`, `longitude`, `radius`: Location-based filtering (includes national businesses)
+- `category_id`: Filter by category
+- `min_rating`: Minimum rating filter
+- `is_verified`: Show only verified businesses
+- `page`, `limit`: Pagination
+- `sort`: Sorting option
+
+**Note**: When location is provided, returns both nearby local businesses AND national businesses. When no location is provided, returns only national businesses.
+
+**Success Response (200):**
+```json
+{
+    "success": true,
+    "data": {
+        "businesses": [
+            {
+                "id": 2,
+                "business_name": "Polar Ice Cream",
+                "slug": "polar-ice-cream",
+                "description": "Premium ice cream brand available nationwide",
+                "is_national": true,
+                "service_coverage": "national",
+                "business_model": "brand",
+                "service_areas": ["Dhaka", "Chittagong", "Sylhet", "Rajshahi"],
+                "overall_rating": "4.20",
+                "total_reviews": 150,
+                "category": {
+                    "id": 3,
+                    "name": "Food & Beverages"
+                }
+            }
+        ]
+    }
+}
+```
+
+### Get National Businesses
+**GET** `/api/v1/businesses/national`
+
+Get businesses that serve entire Bangladesh (brands, online services, delivery-only businesses).
+
+**Query Parameters:**
+- `category_id`: Filter by category
+- `business_model`: Filter by business model ('manufacturing', 'brand', 'online_service', 'delivery_only')
+- `min_rating`: Minimum rating filter
+- `sort`: 'rating', 'popular', 'name', 'featured'
+- `page`, `limit`: Pagination
+
+**Examples:**
+```bash
+# Get all national businesses
+curl "http://localhost:8000/api/v1/businesses/national"
+
+# Get food & beverage brands
+curl "http://localhost:8000/api/v1/businesses/national?category_id=3&business_model=brand"
+
+# Get popular national brands
+curl "http://localhost:8000/api/v1/businesses/national?sort=popular"
+```
+
+**Success Response (200):**
+```json
+{
+    "success": true,
+    "data": {
+        "businesses": [
+            {
+                "id": 10,
+                "business_name": "Pran Foods Limited",
+                "slug": "pran-foods",
+                "description": "Leading food and beverage manufacturer in Bangladesh",
+                "is_national": true,
+                "service_coverage": "national",
+                "business_model": "manufacturing",
+                "service_areas": null,
+                "overall_rating": "4.50",
+                "total_reviews": 289,
+                "is_verified": true,
+                "is_featured": true,
+                "category": {
+                    "id": 3,
+                    "name": "Food & Beverages"
+                }
+            }
+        ],
+        "pagination": {
+            "current_page": 1,
+            "last_page": 3,
+            "per_page": 20,
+            "total": 45,
+            "has_more": true
+        }
+    }
+}
+```
+```
+
+### Get Business Details
+**GET** `/api/v1/businesses/{id}`
+
+**Success Response (200):**
+```json
+{
+    "success": true,
+    "data": {
+        "id": 2,
+        "business_name": "Star Kabab & Restaurant",
+        "slug": "star-kabab-restaurant",
+        "description": "Traditional Bengali and Chinese cuisine",
+        "business_email": "star@example.com",
+        "business_phone": "+8801234567890",
+        "website": "https://starrestaurant.com",
+        "address": "123 Main Street",
+        "area": "Dhanmondi",
+        "city": "Dhaka",
+        "postal_code": "1205",
+        "latitude": "23.7465",
+        "longitude": "90.3754",
+        "opening_hours": {
+            "monday": "09:00-22:00",
+            "tuesday": "09:00-22:00"
+        },
+        "business_features": ["delivery", "pickup", "dine_in"],
+        "overall_rating": "3.50",
+        "total_reviews": 11,
+        "is_verified": true,
+        "is_featured": false,
+        "category": {
+            "id": 1,
+            "name": "Restaurants",
+            "slug": "restaurants"
+        },
+        "owner": {
+            "id": 3,
+            "name": "Restaurant Owner"
+        },
+        "images": [
+            {
+                "id": 1,
+                "image_url": "https://example.com/image1.jpg",
+                "is_logo": true
+            }
+        ],
+        "offerings_count": 8,
+        "offers_count": 2
+    }
+}
+```
+
+### Get Business Offerings
+**GET** `/api/v1/businesses/{id}/offerings`
+
+**Query Parameters:**
+- `type` (optional): Filter by type ('products', 'services')
+- `category_id` (optional): Filter by category ID
+
+**Note:** Offerings are automatically sorted by highest rating first, then by total reviews, then by name.
+
+**Example Request:**
+```bash
+curl "http://localhost:8000/api/v1/businesses/2/offerings?type=products"
+```
+
+**Success Response (200):**
+```json
+{
+    "success": true,
+    "data": {
+        "business": {
+            "id": 2,
+            "business_name": "Star Kabab & Restaurant"
+        },
+        "offerings": [
+            {
+                "id": 1,
+                "name": "Chicken Biryani",
+                "description": "Aromatic basmati rice with tender chicken",
+                "offering_type": "product",
+                "price": "350.00",
+                "currency": "BDT",
+                "average_rating": "4.50",
+                "total_reviews": 25,
+                "is_popular": true,
+                "is_featured": false,
+                "is_favorite": false,
+                "category": {
+                    "id": 1,
+                    "name": "Main Course"
+                },
+                "variants": [
+                    {
+                        "id": 1,
+                        "variant_name": "Regular",
+                        "price": "350.00"
+                    },
+                    {
+                        "id": 2,
+                        "variant_name": "Large",
+                        "price": "450.00"
+                    }
+                ]
+            }
+        ],
+        "sort_by": "rating",
+        "total_count": 8
+    }
+}
+        ],
+        "pagination": {
+            "current_page": 1,
+            "total": 8
+        }
+    }
+}
+```
+
+## 📂 Category Endpoints
+
+### Get Categories
+**GET** `/api/v1/categories`
+
+**Success Response (200):**
+```json
+{
+    "success": true,
+    "data": [
+        {
+            "id": 1,
+            "name": "Restaurants",
+            "slug": "restaurants",
+            "description": "Food and dining establishments",
+            "icon_image": "https://example.com/icon.jpg",
+            "color_code": "#FF5722",
+            "level": 1,
+            "is_featured": true,
+            "business_count": 45,
+            "subcategories": [
+                {
+                    "id": 2,
+                    "name": "Fast Food",
+                    "slug": "fast-food",
+                    "parent_id": 1
+                }
+            ]
+        }
+    ]
+}
+```
+
+## 👤 User Management Endpoints (Protected)
+
+### Get User Favorites
+**GET** `/api/v1/user/favorites`
+
+**Headers:**
+```
+Authorization: Bearer {your-token}
+```
+
+**Success Response (200):**
+```json
+{
+    "success": true,
+    "data": [
+        {
+            "id": 1,
+            "favoritable_type": "business",
+            "favoritable_id": 2,
+            "business": {
+                "id": 2,
+                "business_name": "Star Kabab & Restaurant",
+                "area": "Dhanmondi",
+                "overall_rating": "3.50"
+            },
+            "created_at": "2025-08-23T10:30:00.000000Z"
+        }
+    ]
+}
+```
+
+### Add to Favorites
+**POST** `/api/v1/user/favorites`
+
+**Request Payload:**
+```json
+{
+    "favoritable_type": "business",
+    "favoritable_id": 2
+}
+```
+
+**Success Response (201):**
+```json
+{
+    "success": true,
+    "message": "Added to favorites successfully",
+    "data": {
+        "id": 1,
+        "favoritable_type": "business",
+        "favoritable_id": 2,
+        "created_at": "2025-08-23T10:30:00.000000Z"
+    }
+}
+```
+
+## 📝 Review Management Endpoints (Protected)
+
+### Submit a Review
+**POST** `/api/v1/reviews`
+
+**Headers:**
+```
+Authorization: Bearer {your-token}
+Content-Type: multipart/form-data
+```
+
+**Request Payload:**
+```json
+{
+    "reviewable_type": "business",
+    "reviewable_id": 2,
+    "overall_rating": 4,
+    "service_rating": 4,
+    "quality_rating": 5,
+    "value_rating": 3,
+    "title": "Great food and service!",
+    "review_text": "Had an amazing dining experience here. The biryani was exceptional and the service was prompt. Definitely recommend this place for authentic Bengali cuisine.",
+    "pros": ["Delicious food", "Quick service", "Clean environment"],
+    "cons": ["Slightly expensive", "Limited parking"],
+    "visit_date": "2025-08-20",
+    "amount_spent": 1250.00,
+    "party_size": 4,
+    "is_recommended": true,
+    "is_verified_visit": true,
+    "images": ["file1.jpg", "file2.jpg"]
+}
+```
+
+**Success Response (201):**
+```json
+{
+    "success": true,
+    "message": "Review submitted successfully. It will be visible after admin approval.",
+    "data": {
+        "review": {
+            "id": 15,
+            "overall_rating": 4,
+            "service_rating": 4,
+            "quality_rating": 5,
+            "value_rating": 3,
+            "title": "Great food and service!",
+            "review_text": "Had an amazing dining experience here...",
+            "pros": ["Delicious food", "Quick service", "Clean environment"],
+            "cons": ["Slightly expensive", "Limited parking"],
+            "visit_date": "2025-08-20",
+            "amount_spent": "1250.00",
+            "party_size": 4,
+            "is_recommended": true,
+            "is_verified_visit": true,
+            "status": "pending",
+            "images": [
+                {
+                    "id": 1,
+                    "image_url": "/storage/review-images/image1.jpg"
+                }
+            ],
+            "created_at": "2025-08-23T10:30:00.000000Z"
+        }
+    }
+}
+```
+
+### Get Review Details
+**GET** `/api/v1/reviews/{id}`
+
+**Headers:**
+```
+Authorization: Bearer {your-token}
+```
+
+**Success Response (200):**
+```json
+{
+    "success": true,
+    "data": {
+        "review": {
+            "id": 15,
+            "overall_rating": 4,
+            "service_rating": 4,
+            "quality_rating": 5,
+            "value_rating": 3,
+            "title": "Great food and service!",
+            "review_text": "Had an amazing dining experience here...",
+            "pros": ["Delicious food", "Quick service"],
+            "cons": ["Slightly expensive"],
+            "visit_date": "2025-08-20",
+            "amount_spent": "1250.00",
+            "party_size": 4,
+            "is_recommended": true,
+            "is_verified_visit": true,
+            "helpful_count": 5,
+            "not_helpful_count": 1,
+            "status": "approved",
+            "images": [
+                {
+                    "id": 1,
+                    "image_url": "/storage/review-images/image1.jpg",
+                    "original_filename": "restaurant_photo.jpg"
+                }
+            ],
+            "reviewable": {
+                "type": "business",
+                "id": 2,
+                "business_name": "Star Kabab & Restaurant",
+                "slug": "star-kabab-restaurant",
+                "category_name": "Restaurants",
+                "logo_image": "/storage/business-logos/logo.jpg"
+            },
+            "created_at": "2025-08-23T10:30:00.000000Z",
+            "updated_at": "2025-08-23T11:00:00.000000Z"
+        }
+    }
+}
+```
+
+### Update a Review
+**PUT** `/api/v1/reviews/{id}`
+
+**Headers:**
+```
+Authorization: Bearer {your-token}
+```
+
+**Request Payload:**
+```json
+{
+    "overall_rating": 5,
+    "service_rating": 5,
+    "quality_rating": 5,
+    "value_rating": 4,
+    "title": "Updated: Excellent experience!",
+    "review_text": "After my second visit, I'm even more impressed. The consistency in quality is remarkable...",
+    "pros": ["Exceptional food", "Outstanding service", "Great ambiance"],
+    "cons": ["Could be slightly cheaper"],
+    "visit_date": "2025-08-22",
+    "amount_spent": 1500.00,
+    "party_size": 2,
+    "is_recommended": true,
+    "is_verified_visit": true
+}
+```
+
+**Success Response (200):**
+```json
+{
+    "success": true,
+    "message": "Review updated successfully. It will be re-reviewed for approval.",
+    "data": {
+        "review": {
+            "id": 15,
+            "overall_rating": 5,
+            "title": "Updated: Excellent experience!",
+            "review_text": "After my second visit, I'm even more impressed...",
+            "status": "pending",
+            "updated_at": "2025-08-23T12:00:00.000000Z"
+        }
+    }
+}
+```
+
+### Delete a Review
+**DELETE** `/api/v1/reviews/{id}`
+
+**Headers:**
+```
+Authorization: Bearer {your-token}
+```
+
+**Success Response (200):**
+```json
+{
+    "success": true,
+    "message": "Review deleted successfully"
+}
+```
+
+### Review Validation Rules
+- `reviewable_type`: Required, must be 'business' or 'offering'
+- `reviewable_id`: Required, valid business or offering ID
+- `overall_rating`: Required, integer 1-5
+- `service_rating`, `quality_rating`, `value_rating`: Optional, integer 1-5
+- `title`: Optional, max 255 characters
+- `review_text`: Required, 10-2000 characters
+- `pros`: Optional array, max 5 items, each max 100 characters
+- `cons`: Optional array, max 5 items, each max 100 characters
+- `visit_date`: Optional, valid date, not in future
+- `amount_spent`: Optional, numeric, 0-999999.99
+- `party_size`: Optional, integer 1-20
+- `images`: Optional, max 5 images, each max 5MB (jpeg,png,jpg,webp)
+
+### Review Status Flow
+1. **Pending**: Newly submitted reviews await admin approval
+2. **Approved**: Reviews visible to public, user earns points
+3. **Rejected**: Reviews not displayed, user notified
+4. **Edit Limitation**: Only pending/rejected reviews can be edited
+
+### Points System
+Users earn points for approved reviews based on:
+- Base points: 10 for any approved review
+- Detailed review (100+ chars): +5 points
+- Multiple rating categories: +2 points each
+- Pros provided: +3 points
+- Cons provided: +3 points
+- Verified visit: +5 points
+
+## 🏆 User Level System
+
+The platform features a comprehensive user level system that tracks user engagement and contributions:
+
+### Level Calculation
+User levels are calculated based on three main factors:
+- **Points Contribution (max 100)**: Based on total points earned from reviews and activities
+- **Activity Contribution (max 50)**: Reviews (5 points each) + Favorites (2 points each)
+- **Trust Contribution (max 30)**: Based on user trust level (1-5 scale)
+
+### User Levels
+1. **New Explorer (0-39 points)**: Just starting the discovery journey
+2. **Rising Contributor (40-79 points)**: Growing presence in the community
+3. **Active Explorer (80-119 points)**: Engaged user discovering local businesses
+4. **Seasoned Reviewer (120-149 points)**: Experienced user with valuable insights
+5. **Expert Explorer (150+ points)**: Master of discovery with exceptional contributions
+
+### Level Benefits
+- Visual recognition in the app
+- Progress tracking with detailed breakdown
+- Contribution analytics
+- Enhanced profile status
+
+## ❌ Error Responses
+
+All endpoints return consistent error responses:
+
+**Validation Error (422):**
+```json
+{
+    "success": false,
+    "message": "Validation failed",
+    "errors": {
+        "email": ["The email field is required."],
+        "password": ["The password field is required."]
+    }
+}
+```
+
+**Authentication Error (401):**
+```json
+{
+    "success": false,
+    "message": "Unauthorized"
+}
+```
+
+**Not Found Error (404):**
+```json
+{
+    "success": false,
+    "message": "Resource not found"
+}
+```
+
+**Server Error (500):**
+```json
+{
+    "success": false,
+    "message": "Internal server error",
+    "error": "Detailed error message (only in debug mode)"
+}
+```
+
+## 🎛 Admin Panel
+
+Access the admin panel at: `http://localhost:8000/admin`
+
+### Features
+- **Dashboard**: Analytics overview and key metrics
+- **Business Management**: CRUD operations with approval workflows
+- **User Management**: Role-based user administration
+- **Content Moderation**: Review and approval systems
+- **Notification Center**: Real-time database notifications (30s polling)
+- **Profile Management**: Complete admin profile system
+- **Analytics**: Comprehensive reporting and insights
+
+### Role-based Access
+- **Super Admin**: Full system access
+- **Admin**: Business and user management + notifications
+- **Moderator**: Content moderation and analytics
+- **Business Owner**: Own business management only
+
+### Notification System
+- Smart role-based notifications
+- Admin notifications for important events only
+- Real-time polling every 30 seconds
+- Configurable notification rules in `config/notifications.php`
+
+## 🎛️ Admin Dashboard (Filament)
+
+### National Business Management
+
+The Filament admin dashboard now includes comprehensive support for managing national businesses:
+
+#### Features Added:
+- **National Business Toggle**: Mark businesses as national brands (Pran Foods, Polar Ice Cream, etc.)
+- **Service Coverage**: Local, City-wide, Regional, or National scope
+- **Business Model**: Manufacturing, Brand, Franchise, Distributor, etc.
+- **Service Areas**: Tag-based input for cities/regions served
+- **National Business Filters**: Filter by national status, coverage, and model
+- **Bulk Actions**: Convert multiple businesses to national or local at once
+
+#### Accessing Admin Dashboard:
+```bash
+# Visit the admin panel
+http://localhost:8000/admin
+
+# Default admin login (update in production):
+Email: admin@admin.com
+Password: admin123
+```
+
+#### Managing National Businesses:
+
+1. **Create National Business**:
+   - Go to Businesses → Create
+   - Fill basic information
+   - Expand "National Business Settings"
+   - Toggle "National Business" ON
+   - Select service coverage (National/Regional)
+   - Choose business model (Manufacturing/Brand/etc.)
+   - Add service areas if regional/national
+
+2. **Convert Existing Business**:
+   - Go to Businesses list
+   - Select business(es) to convert
+   - Use "Mark as National" bulk action
+   - Configure coverage and model
+
+3. **Filter National Businesses**:
+   - Use "National Business" filter
+   - Filter by "Service Coverage"
+   - Filter by "Business Model"
+
+#### National Business Fields:
+- `is_national`: Boolean toggle for national status
+- `service_coverage`: local | citywide | regional | national
+- `business_model`: retail | restaurant | service | manufacturing | brand | franchise | distributor | wholesaler  
+- `service_areas`: Array of cities/regions served
+
+## 🔧 Development Commands
+
+### Testing
+```bash
+# Run all tests
+php artisan test
+
+# Test specific feature
+php artisan test --filter=AuthenticationTest
+```
+
+### Notifications
+```bash
+# Test notification system
+php artisan notification:test --title="Test" --message="Testing notifications"
+
+# Test offer creation notifications
+php artisan test:offer-creation
+
+# Test notification events
+php artisan test:notification-events
+```
+
+### Analytics
+```bash
+# Generate test analytics data
+php artisan analytics:generate-test-data --count=50
+```
+
+### Code Quality
+```bash
+# Fix code style
+./vendor/bin/pint
+
+# Clear caches
+php artisan cache:clear && php artisan config:clear
+```
+
+## 🌟 Key Features Explained
+
+### Universal Search System
+Sophisticated search that simultaneously searches businesses and offerings:
+- Real-time autocomplete suggestions
+- Location-based filtering with radius support
+- Advanced filtering by ratings, features, price ranges
+- Intelligent relevance scoring
+- Analytics tracking for search behavior
+
+### Role-based Access Control
+Comprehensive permission system:
+- Hierarchical role structure with Spatie Laravel Permission
+- Granular permissions for each resource
+- Business owner isolation (own businesses only)
+- Smart notification routing based on roles
+
+### Smart Notification System
+Advanced notification system with:
+- Role-based notification routing
+- Configurable rules for admin notifications
+- Database notifications with Filament integration
+- Real-time polling in admin panel
+- Selective notifications to prevent spam
+
+### Analytics & Trending
+Advanced analytics tracking:
+- Business discovery patterns and user behavior
+- Search analytics with trending terms
+- Geographic usage patterns and location analytics
+- Performance metrics and engagement tracking
+
+### Mobile-Optimized API
+Clean, efficient API for mobile applications:
+- Minimal response payloads with essential data
+- Location-aware services with GPS integration
+- Token-based authentication with Laravel Sanctum
+- Comprehensive error handling and validation
+
+## 📄 License
+
+This project is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## 🤝 Support
+
+For support, email support@5srt.com or open an issue on GitHub.
+
+---
+
+<p align="center">
+    Built with ❤️ by the 5SRT Team
+</p>

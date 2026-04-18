@@ -1,0 +1,596 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Business extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'business_name',
+        'slug',
+        'description',
+        'category_id',
+        'subcategory_id',
+        'owner_user_id',
+        'business_email',
+        'business_phone',
+        'website_url',
+        'full_address',
+        'latitude',
+        'longitude',
+        'city',
+        'area',
+        'landmark',
+        'opening_hours',
+        'price_range',
+        'has_delivery',
+        'has_pickup',
+        'has_parking',
+        'is_verified',
+        'is_featured',
+        'is_active',
+        'is_national',
+        'service_coverage',
+        'service_areas',
+        'business_model',
+        'product_tags',
+        'business_tags',
+        'overall_rating',
+        'total_reviews',
+        'discovery_score',
+        'approval_status',
+        'rejection_reason',
+        'approved_by',
+        'approved_at',
+        'pending_changes',
+        'has_pending_changes',
+    ];
+
+    protected $hidden = [
+        'created_at',
+        'updated_at'
+    ];
+
+    protected $appends = [
+        'image_url',
+        'name',
+        'google_maps_url'
+    ];
+
+    protected $casts = [
+        'latitude' => 'decimal:8',
+        'longitude' => 'decimal:8',
+        'opening_hours' => 'array',
+        'price_range' => 'integer',
+        'has_delivery' => 'boolean',
+        'has_pickup' => 'boolean',
+        'has_parking' => 'boolean',
+        'is_verified' => 'boolean',
+        'is_featured' => 'boolean',
+        'is_active' => 'boolean',
+        'is_national' => 'boolean',
+        'service_areas' => 'array',
+        'product_tags' => 'array',
+        'business_tags' => 'array',
+        'overall_rating' => 'decimal:2',
+        'total_reviews' => 'integer',
+        'discovery_score' => 'decimal:2',
+        'pending_changes' => 'array',
+        'has_pending_changes' => 'boolean',
+        'approved_at' => 'datetime',
+    ];
+
+    // Accessors
+    public function getImageUrlAttribute()
+    {
+        return $this->logoImage?->image_url;
+    }
+
+    /**
+     * Get Google Maps URL for this business
+     */
+    public function getGoogleMapsUrlAttribute()
+    {
+        if (!$this->latitude || !$this->longitude) {
+            return null;
+        }
+        
+        // Google Maps URL with coordinates and business name
+        return "https://www.google.com/maps/search/" . urlencode($this->business_name) . "/@" . $this->latitude . "," . $this->longitude . ",15z";
+    }
+
+    /**
+     * Get Google Maps directions URL
+     */
+    public function getGoogleMapsDirectionsUrl($fromLatitude = null, $fromLongitude = null)
+    {
+        if (!$this->latitude || !$this->longitude) {
+            return null;
+        }
+        
+        $destination = $this->latitude . "," . $this->longitude;
+        
+        if ($fromLatitude && $fromLongitude) {
+            $origin = $fromLatitude . "," . $fromLongitude;
+            return "https://www.google.com/maps/dir/" . $origin . "/" . $destination;
+        }
+        
+        // If no origin specified, let Google Maps use current location
+        return "https://www.google.com/maps/dir//" . $destination;
+    }
+
+    /**
+     * Get Google Maps place search URL
+     */
+    public function getGoogleMapsPlaceUrl()
+    {
+        if (!$this->latitude || !$this->longitude) {
+            return null;
+        }
+        
+        $query = urlencode($this->business_name . " " . $this->full_address);
+        return "https://www.google.com/maps/search/" . $query;
+    }
+
+    /**
+     * Get Google Maps embed URL for iframe embedding
+     */
+    public function getGoogleMapsEmbedUrl($apiKey = null, $mapType = 'place')
+    {
+        if (!$this->latitude || !$this->longitude) {
+            return null;
+        }
+        
+        $baseUrl = "https://www.google.com/maps/embed/v1/";
+        
+        switch ($mapType) {
+            case 'place':
+                $url = $baseUrl . "place";
+                $query = urlencode($this->business_name . " " . $this->area . " " . $this->city);
+                break;
+            case 'view':
+                $url = $baseUrl . "view";
+                $query = $this->latitude . "," . $this->longitude;
+                break;
+            default:
+                $url = $baseUrl . "place";
+                $query = urlencode($this->business_name . " " . $this->area . " " . $this->city);
+        }
+        
+        $params = [
+            'q' => $query,
+            'zoom' => '15',
+            'maptype' => 'roadmap'
+        ];
+        
+        if ($apiKey) {
+            $params['key'] = $apiKey;
+        }
+        
+        return $url . "?" . http_build_query($params);
+    }
+
+    /**
+     * Get simple Google Maps URL without embed (for direct viewing)
+     */
+    public function getGoogleMapsSimpleUrl()
+    {
+        if (!$this->latitude || !$this->longitude) {
+            return null;
+        }
+        
+        return "https://maps.google.com/?q=" . $this->latitude . "," . $this->longitude;
+    }
+
+    /**
+     * Get OpenStreetMap URLs (Free alternative)
+     */
+    public function getOpenStreetMapUrl()
+    {
+        if (!$this->latitude || !$this->longitude) {
+            return null;
+        }
+        
+        return "https://www.openstreetmap.org/?mlat=" . $this->latitude . "&mlon=" . $this->longitude . "&zoom=15";
+    }
+
+    /**
+     * Get Leaflet map data for frontend rendering
+     */
+    public function getLeafletMapData()
+    {
+        if (!$this->latitude || !$this->longitude) {
+            return null;
+        }
+        
+        return [
+            'center' => [
+                'lat' => (float) $this->latitude,
+                'lng' => (float) $this->longitude
+            ],
+            'zoom' => 15,
+            'marker' => [
+                'lat' => (float) $this->latitude,
+                'lng' => (float) $this->longitude,
+                'popup' => $this->business_name . '<br>' . $this->full_address
+            ],
+            'tile_url' => 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+            'attribution' => '© OpenStreetMap contributors'
+        ];
+    }
+
+    /**
+     * Get MapBox URLs (free tier available)
+     */
+    public function getMapBoxUrl($accessToken = null)
+    {
+        if (!$this->latitude || !$this->longitude) {
+            return null;
+        }
+        
+        $token = $accessToken ?? config('maps.mapbox.access_token');
+        
+        if (!$token) {
+            return null; // No token available
+        }
+        
+        $baseUrl = "https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/pin-s+ff0000({$this->longitude},{$this->latitude})/{$this->longitude},{$this->latitude},15,0/600x400@2x";
+        
+        return $baseUrl . "?access_token=" . $token;
+    }
+
+    /**
+     * Get MapBox embed data for frontend
+     */
+    public function getMapBoxEmbedData()
+    {
+        if (!$this->latitude || !$this->longitude) {
+            return null;
+        }
+        
+        $token = config('maps.mapbox.access_token');
+        
+        if (!$token) {
+            return null;
+        }
+        
+        return [
+            'access_token' => $token,
+            'style' => config('maps.mapbox.style', 'mapbox://styles/mapbox/streets-v11'),
+            'center' => [(float) $this->longitude, (float) $this->latitude], // Note: lng, lat for MapBox
+            'zoom' => 15,
+            'marker' => [
+                'coordinates' => [(float) $this->longitude, (float) $this->latitude],
+                'popup' => $this->business_name . '<br>' . $this->full_address
+            ]
+        ];
+    }
+
+    /**
+     * Relationships
+     */
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
+    }
+
+    public function subcategory()
+    {
+        return $this->belongsTo(Category::class, 'subcategory_id');
+    }
+
+    public function owner()
+    {
+        return $this->belongsTo(User::class, 'owner_user_id');
+    }
+
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    public function images()
+    {
+        return $this->hasMany(BusinessImage::class);
+    }
+
+    public function logoImage()
+    {
+        return $this->hasOne(BusinessImage::class)->where('image_type', 'logo');
+    }
+
+    public function coverImage()
+    {
+        return $this->hasOne(BusinessImage::class)->where('image_type', 'cover');
+    }
+
+    public function galleryImages()
+    {
+        return $this->hasMany(BusinessImage::class)->where('image_type', 'gallery');
+    }
+
+    public function businessCategories()
+    {
+        return $this->hasMany(BusinessCategory::class);
+    }
+
+    public function categories()
+    {
+        return $this->belongsToMany(Category::class, 'business_categories');
+    }
+
+    public function offerings()
+    {
+        return $this->hasMany(BusinessOffering::class);
+    }
+
+    public function products()
+    {
+        return $this->hasMany(BusinessOffering::class)->where('offering_type', 'product');
+    }
+
+    public function services()
+    {
+        return $this->hasMany(BusinessOffering::class)->where('offering_type', 'service');
+    }
+
+    public function reviews()
+    {
+        return $this->morphMany(Review::class, 'reviewable');
+    }
+
+    public function offers()
+    {
+        return $this->hasMany(Offer::class);
+    }
+
+    public function activeOffers()
+    {
+        return $this->hasMany(Offer::class)
+            ->where('is_active', true)
+            ->where('valid_from', '<=', now())
+            ->where('valid_to', '>=', now());
+    }
+
+    public function searchLogs()
+    {
+        return $this->hasMany(SearchLog::class, 'clicked_business_id');
+    }
+
+    public function trendingData()
+    {
+        return $this->hasMany(TrendingData::class, 'item_id')->where('item_type', 'business');
+    }
+
+    public function collections()
+    {
+        return $this->belongsToMany(UserCollection::class, 'collection_items', 'business_id', 'collection_id')
+                    ->withPivot(['notes', 'sort_order', 'added_at'])
+                    ->withTimestamps();
+    }
+
+    /**
+     * Scopes
+     */
+    public function scopeActive($query)
+    {
+        return $query->where('is_active', true);
+    }
+
+    public function scopeVerified($query)
+    {
+        return $query->where('is_verified', true);
+    }
+
+    public function scopeFeatured($query)
+    {
+        return $query->where('is_featured', true);
+    }
+
+    public function scopeNational($query)
+    {
+        return $query->where('is_national', true);
+    }
+
+    public function scopeLocal($query)
+    {
+        return $query->where('is_national', false);
+    }
+
+    public function scopeByServiceCoverage($query, $coverage)
+    {
+        return $query->where('service_coverage', $coverage);
+    }
+
+    public function scopeByBusinessModel($query, $model)
+    {
+        return $query->where('business_model', $model);
+    }
+
+    public function scopeServingArea($query, $area)
+    {
+        return $query->where(function($q) use ($area) {
+            $q->where('is_national', true)
+              ->orWhere('service_areas', 'LIKE', '%"' . $area . '"%')
+              ->orWhere('city', 'LIKE', '%' . $area . '%')
+              ->orWhere('area', 'LIKE', '%' . $area . '%');
+        });
+    }
+
+    public function scopeInCategory($query, $categoryId)
+    {
+        return $query->where('category_id', $categoryId);
+    }
+
+    public function scopeNearby($query, $latitude, $longitude, $radiusKm = 10)
+    {
+        return $query->whereRaw(
+            "( 6371 * acos( cos( radians(?) ) * 
+              cos( radians( latitude ) ) * 
+              cos( radians( longitude ) - radians(?) ) + 
+              sin( radians(?) ) * 
+              sin( radians( latitude ) ) ) ) < ?", 
+            [$latitude, $longitude, $latitude, $radiusKm]
+        )->orderByRaw(
+            "( 6371 * acos( cos( radians(?) ) * 
+              cos( radians( latitude ) ) * 
+              cos( radians( longitude ) - radians(?) ) + 
+              sin( radians(?) ) * 
+              sin( radians( latitude ) ) ) )", 
+            [$latitude, $longitude, $latitude]
+        );
+    }
+
+    public function scopeNearbyWithDistance($query, $latitude, $longitude, $radiusKm = 10)
+    {
+        return $query->selectRaw("businesses.*, 
+            ( 6371 * acos( cos( radians(?) ) * 
+              cos( radians( latitude ) ) * 
+              cos( radians( longitude ) - radians(?) ) + 
+              sin( radians(?) ) * 
+              sin( radians( latitude ) ) ) ) AS distance", 
+            [$latitude, $longitude, $latitude])
+            ->having('distance', '<', $radiusKm)
+            ->orderBy('distance');
+    }
+
+    public function scopeWithRating($query, $minRating = 0)
+    {
+        return $query->where('overall_rating', '>=', $minRating);
+    }
+
+    public function scopePriceRange($query, $minPrice, $maxPrice = null)
+    {
+        $query->where('price_range', '>=', $minPrice);
+        if ($maxPrice) {
+            $query->where('price_range', '<=', $maxPrice);
+        }
+        return $query;
+    }
+
+    /**
+     * Calculate and update discovery score
+     */
+    public function updateDiscoveryScore($userLatitude = null, $userLongitude = null)
+    {
+        $score = 0;
+
+        // Distance factor (30%) - closer is better
+        if ($userLatitude && $userLongitude) {
+            $distance = $this->calculateDistance($userLatitude, $userLongitude);
+            $distanceScore = max(0, 100 - ($distance * 10)); // 10km = 0 points
+            $score += $distanceScore * 0.30;
+        }
+
+        // Rating factor (25%)
+        $ratingScore = ($this->overall_rating / 5) * 100;
+        $score += $ratingScore * 0.25;
+
+        // Recent review activity (20%)
+        $recentReviews = $this->reviews()
+            ->where('created_at', '>=', now()->subDays(30))
+            ->count();
+        $recentActivityScore = min(100, $recentReviews * 10);
+        $score += $recentActivityScore * 0.20;
+
+        // Active offers (15%)
+        $activeOffersCount = $this->activeOffers()->count();
+        $offersScore = min(100, $activeOffersCount * 25);
+        $score += $offersScore * 0.15;
+
+        // User preference match (10%) - can be enhanced based on user behavior
+        $preferenceScore = 50; // Base score
+        $score += $preferenceScore * 0.10;
+
+        $this->update(['discovery_score' => round($score, 2)]);
+        return $score;
+    }
+
+    /**
+     * Scope for businesses with specific product tags
+     */
+    public function scopeWithProductTag($query, $tag)
+    {
+        return $query->whereJsonContains('product_tags', $tag);
+    }
+
+    /**
+     * Scope for businesses with any of the provided product tags
+     */
+    public function scopeWithAnyProductTag($query, $tags)
+    {
+        $query->where(function($q) use ($tags) {
+            foreach ((array) $tags as $tag) {
+                $q->orWhereJsonContains('product_tags', $tag);
+            }
+        });
+        return $query;
+    }
+
+    /**
+     * Scope for businesses with specific business tags
+     */
+    public function scopeWithBusinessTag($query, $tag)
+    {
+        return $query->whereJsonContains('business_tags', $tag);
+    }
+
+    // UTILITY METHODS
+
+    /**
+     * Check if business has a specific product tag
+     */
+    public function hasProductTag($tag)
+    {
+        return in_array($tag, $this->product_tags ?? []);
+    }
+
+    /**
+     * Check if business has any of the provided product tags
+     */
+    public function hasAnyProductTag($tags)
+    {
+        $businessTags = $this->product_tags ?? [];
+        return !empty(array_intersect($businessTags, (array) $tags));
+    }
+
+    /**
+     * Check if business has a specific business tag
+     */
+    public function hasBusinessTag($tag)
+    {
+        return in_array($tag, $this->business_tags ?? []);
+    }
+
+    /**
+     * Calculate distance to a point in kilometers
+     */
+    public function calculateDistance($latitude, $longitude)
+    {
+        $earthRadius = 6371; // Earth's radius in kilometers
+
+        $dLat = deg2rad($latitude - $this->latitude);
+        $dLon = deg2rad($longitude - $this->longitude);
+
+        $a = sin($dLat/2) * sin($dLat/2) + 
+             cos(deg2rad($this->latitude)) * cos(deg2rad($latitude)) * 
+             sin($dLon/2) * sin($dLon/2);
+
+        $c = 2 * atan2(sqrt($a), sqrt(1-$a));
+        $distance = $earthRadius * $c;
+
+        return $distance;
+    }
+
+    /**
+     * Get the business name
+     */
+    public function getNameAttribute()
+    {
+        return $this->business_name;
+    }
+}
