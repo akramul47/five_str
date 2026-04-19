@@ -3,6 +3,7 @@
 class ApiConfig {
   ApiConfig._();
 
+  static const String baseUrl = 'https://api.5str.xyz';
   static const String apiPrefix = '/api/v1';
 
   // ── Authentication ──

@@ -57,7 +57,7 @@ dependencies:
   timeago: ^3.7.0
 
   # Environment
-  flutter_dotenv: ^5.2.1
+  
 
   # Animations
   flutter_animate: ^4.5.2
@@ -78,7 +78,6 @@ flutter:
   uses-material-design: true
 
   assets:
-    - .env
     - assets/images/
     - assets/icons/
     - assets/fonts/

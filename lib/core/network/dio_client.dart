@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import '../errors/exceptions.dart';
+import '../config/api_config.dart';
 import '../../data/services/auth_service.dart';
 
 /// Centralized Dio HTTP client with auth interceptor.
@@ -13,7 +13,7 @@ class DioClient {
   DioClient({required AuthService authService}) : _authService = authService {
     _dio = Dio(
       BaseOptions(
-        baseUrl: dotenv.env['API_BASE_URL'] ?? 'http://127.0.0.1:8000',
+        baseUrl: ApiConfig.baseUrl,
         connectTimeout: const Duration(seconds: 15),
         receiveTimeout: const Duration(seconds: 15),
         sendTimeout: const Duration(seconds: 30),

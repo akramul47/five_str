@@ -1,8 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import 'skeleton_loader.dart';
+import '../../../core/config/api_config.dart';
 
 /// A robust image widget that handles network images with caching,
 /// loading states (shimmer), and fallback/error images.
@@ -34,10 +34,7 @@ class SmartImage extends StatelessWidget {
     
     // Fix relative image paths returned by Laravel
     if (!formattedUrl.startsWith('http') && !formattedUrl.startsWith('file://')) {
-      String baseUrl = dotenv.env['API_BASE_URL'] ?? 'https://api.5str.xyz';
-      if (baseUrl.trim().isEmpty) {
-        baseUrl = 'https://api.5str.xyz';
-      }
+      String baseUrl = ApiConfig.baseUrl;
       
       // Ensure baseUrl doesn't end with a slash if we're adding one
       if (baseUrl.endsWith('/')) {
