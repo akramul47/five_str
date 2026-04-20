@@ -3,13 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ionicons/ionicons.dart';
 
+import '../../../data/models/category_model.dart';
 import '../../providers/home_provider.dart';
 import '../../../core/constants/colors.dart';
-import '../../widgets/cards/business_card.dart';
 import '../../widgets/common/skeleton_loader.dart';
 import '../../widgets/common/smart_image.dart';
 
-/// Translated Home Screen matching the provided design layout logic.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -24,6 +23,7 @@ class HomeScreen extends ConsumerWidget {
         onRefresh: () => ref.read(homeProvider.notifier).loadData(isRefresh: true),
         child: CustomScrollView(
           slivers: [
+            // ── Header ──
             SliverToBoxAdapter(
               child: SafeArea(
                 bottom: false,
@@ -57,7 +57,7 @@ class HomeScreen extends ConsumerWidget {
                             Ionicons.notifications_outline,
                             color: isDark ? AppColors.white : AppColors.deepNavy,
                           ),
-                          onPressed: () {},
+                          onPressed: () => context.push('/notifications'),
                         ),
                       ),
                     ],
@@ -65,37 +65,37 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ),
             ),
-            
-            // Search Bar Row
+
+            // ── Search Bar ──
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24.0),
                 child: Row(
                   children: [
                     Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        height: 56,
-                        decoration: BoxDecoration(
-                          color: isDark ? AppColors.darkSurface : const Color(0xFFFFF9F2),
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Ionicons.search,
-                              color: AppColors.secondaryOrange,
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Text(
-                                'What are you looking for?',
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: isDark ? Colors.white54 : const Color(0xFFD6C0B3),
+                      child: GestureDetector(
+                        onTap: () => context.push('/search'),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          height: 56,
+                          decoration: BoxDecoration(
+                            color: isDark ? AppColors.darkSurface : const Color(0xFFFFF9F2),
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Ionicons.search, color: AppColors.secondaryOrange),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Text(
+                                  'What are you looking for?',
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: isDark ? Colors.white54 : const Color(0xFFD6C0B3),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -108,10 +108,7 @@ class HomeScreen extends ConsumerWidget {
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: IconButton(
-                        icon: const Icon(
-                          Ionicons.options,
-                          color: AppColors.secondaryOrange,
-                        ),
+                        icon: const Icon(Ionicons.options, color: AppColors.secondaryOrange),
                         onPressed: () {},
                       ),
                     ),
@@ -120,132 +117,37 @@ class HomeScreen extends ConsumerWidget {
               ),
             ),
 
-            const SliverToBoxAdapter(child: SizedBox(height: 24)),
+            const SliverToBoxAdapter(child: SizedBox(height: 28)),
 
-            // Banner Carousel
-            SliverToBoxAdapter(
-              child: _buildBannerSection(homeState, theme, isDark),
+            // ── All Content Below Search Bar in One SliverList ──
+            SliverList(
+              delegate: SliverChildListDelegate([
+                // Top Services
+                _buildTopServicesSection(homeState, theme, isDark, context),
+                const SizedBox(height: 28),
+
+                // Popular Nearby
+                _buildPopularNearbySection(homeState, theme, isDark, context),
+                const SizedBox(height: 28),
+
+                // Dynamic Sections
+                if (homeState.data?.dynamicSections.isNotEmpty ?? false)
+                  ...homeState.data!.dynamicSections.map(
+                    (section) => _buildDynamicSection(section, theme, isDark, context),
+                  ),
+
+                const SizedBox(height: 100),
+              ]),
             ),
-
-            const SliverToBoxAdapter(child: SizedBox(height: 32)),
-
-            // Nearest Places Section
-            SliverToBoxAdapter(
-              child: _buildNearestPlacesSection(homeState, theme, isDark),
-            ),
-
-            const SliverToBoxAdapter(child: SizedBox(height: 32)),
-
-            // Popular Menu / Featured Places Section
-            SliverToBoxAdapter(
-              child: _buildPopularFeaturedSection(context, homeState, theme, isDark),
-            ),
-
-            // Extra padding for floating bottom nav
-            const SliverToBoxAdapter(child: SizedBox(height: 100)),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildBannerSection(HomeState state, ThemeData theme, bool isDark) {
-    if (state.isLoading) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-        child: SkeletonLoader(height: 150, width: double.infinity, borderRadius: 20),
-      );
-    }
+  // ── Top Services ──────────────────────────────────────────────────────────
 
-    if (state.data?.banners.isEmpty ?? true) {
-      return const SizedBox.shrink();
-    }
-
-    return SizedBox(
-      height: 150,
-      child: PageView.builder(
-        controller: PageController(viewportFraction: 0.9),
-        itemCount: state.data!.banners.length,
-        itemBuilder: (context, index) {
-          final banner = state.data!.banners[index];
-          return Container(
-            margin: const EdgeInsets.symmetric(horizontal: 8),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
-              color: AppColors.primaryYellow,
-            ),
-            clipBehavior: Clip.antiAlias,
-            child: Stack(
-              children: [
-                if (banner.imageUrl.isNotEmpty)
-                  Positioned.fill(
-                    child: SmartImage(
-                      imageUrl: banner.imageUrl,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                // Gradient overlay for text readability
-                Positioned.fill(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.black.withValues(alpha: 0.7),
-                          Colors.transparent,
-                        ],
-                        begin: Alignment.centerLeft,
-                        end: Alignment.centerRight,
-                      ),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  left: 20,
-                  top: 0,
-                  bottom: 0,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        banner.title,
-                        style: theme.textTheme.headlineMedium?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      if (banner.subtitle != null) ...[
-                        const SizedBox(height: 8),
-                        Text(
-                          banner.subtitle!,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: Colors.white70,
-                          ),
-                        ),
-                      ],
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: () {},
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                          foregroundColor: AppColors.primaryYellow,
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                          minimumSize: Size.zero,
-                        ),
-                        child: const Text('View Deal'),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildNearestPlacesSection(HomeState state, ThemeData theme, bool isDark) {
+  Widget _buildTopServicesSection(HomeState state, ThemeData theme, bool isDark, BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -254,15 +156,11 @@ class HomeScreen extends ConsumerWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Popular Nearby',
-                style: theme.textTheme.titleLarge,
-              ),
-              Text(
-                'View More',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: AppColors.secondaryOrange,
-                ),
+              Text('Top Services', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+              GestureDetector(
+                onTap: () {},
+                child: Text('View All',
+                    style: theme.textTheme.bodyMedium?.copyWith(color: AppColors.secondaryOrange)),
               ),
             ],
           ),
@@ -270,27 +168,27 @@ class HomeScreen extends ConsumerWidget {
         const SizedBox(height: 16),
         if (state.isLoading)
           SizedBox(
-            height: 180,
+            height: 90,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: 3,
-              itemBuilder: (context, index) => const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 8.0),
-                child: SkeletonLoader(height: 180, width: 140, borderRadius: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              itemCount: 5,
+              itemBuilder: (_, __) => const Padding(
+                padding: EdgeInsets.only(right: 16),
+                child: SkeletonLoader(width: 64, height: 90, borderRadius: 16),
               ),
             ),
           )
-        else if (state.data?.popularNearby.isNotEmpty ?? false)
+        else if (state.data?.topServices.isNotEmpty ?? false)
           SizedBox(
-            height: 200,
+            height: 90,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: state.data!.popularNearby.length,
-              itemBuilder: (context, index) {
-                final business = state.data!.popularNearby[index];
-                return _buildSquareCard(context, business, theme, isDark);
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              itemCount: state.data!.topServices.length,
+              itemBuilder: (_, index) {
+                final cat = state.data!.topServices[index];
+                return _buildServiceChip(cat, theme, isDark, context);
               },
             ),
           ),
@@ -298,64 +196,76 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildSquareCard(BuildContext context, business, ThemeData theme, bool isDark) {
+  Widget _buildServiceChip(CategoryModel cat, ThemeData theme, bool isDark, BuildContext context) {
+    Color bgColor;
+    try {
+      final hex = cat.colorCode.replaceFirst('#', '');
+      bgColor = Color(int.parse('FF$hex', radix: 16));
+    } catch (_) {
+      bgColor = AppColors.primaryYellow;
+    }
+
     return GestureDetector(
-      onTap: () => context.push('/business/${business.id}', extra: business),
+      onTap: () => context.push('/category/${cat.id}'),
       child: Container(
-      width: 140,
-      margin: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurface : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          if (!isDark)
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+        width: 72,
+        margin: const EdgeInsets.only(right: 14),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: bgColor.withValues(alpha: isDark ? 0.2 : 0.12),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Center(
+                child: cat.iconImage != null
+                    ? _buildCategoryIcon(cat.iconImage!, bgColor)
+                    : Icon(Ionicons.grid_outline, color: bgColor, size: 26),
+              ),
             ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Hero(
-            tag: 'business-image-${business.id}',
-            child: SmartImage(
-              imageUrl: business.logoUrl ?? business.coverUrl,
-              width: 80,
-              height: 80,
-              isRound: true,
-              fit: BoxFit.cover,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0),
-            child: Text(
-              business.businessName,
-              style: theme.textTheme.bodyLarge?.copyWith(
-                fontWeight: FontWeight.bold,
+            const SizedBox(height: 6),
+            Text(
+              cat.name,
+              style: theme.textTheme.labelSmall?.copyWith(
+                fontWeight: FontWeight.w600,
+                height: 1.2,
               ),
               textAlign: TextAlign.center,
-              maxLines: 1,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '${business.distanceKm ?? 0} km',
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: isDark ? Colors.white54 : Colors.grey,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
-  Widget _buildPopularFeaturedSection(BuildContext context, HomeState state, ThemeData theme, bool isDark) {
+  Widget _buildCategoryIcon(String iconPath, Color color) {
+    final isSvg = iconPath.endsWith('.svg');
+
+    if (isSvg) {
+      // Server .svg icons often return HTML 404 — use a colored icon fallback instead
+      return Icon(Ionicons.grid_outline, color: color, size: 26);
+    } else {
+      return SmartImage(
+        imageUrl: iconPath,
+        width: 32,
+        height: 32,
+        fit: BoxFit.contain,
+      );
+    }
+  }
+
+  // ── Popular Nearby ────────────────────────────────────────────────────────
+
+  Widget _buildPopularNearbySection(HomeState state, ThemeData theme, bool isDark, BuildContext context) {
+    if (!state.isLoading && (state.data?.popularNearby.isEmpty ?? true)) {
+      return const SizedBox.shrink();
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -364,25 +274,222 @@ class HomeScreen extends ConsumerWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Featured Places',
-                style: theme.textTheme.titleLarge,
+              Row(
+                children: [
+                  Icon(Ionicons.location, color: AppColors.primaryYellow, size: 18),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Popular Services Nearby',
+                    style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  ),
+                ],
               ),
-              Text(
-                'View More',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: AppColors.secondaryOrange,
-                ),
-              ),
+              Text('View All',
+                  style: theme.textTheme.bodyMedium?.copyWith(color: AppColors.secondaryOrange)),
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 4),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
+          child: Text(
+            'Highly rated in your area',
+            style: theme.textTheme.bodySmall?.copyWith(color: Colors.grey),
+          ),
+        ),
+        const SizedBox(height: 14),
         if (state.isLoading)
-          const SkeletonCard()
-        else if (state.data?.featuredBusinesses.isNotEmpty ?? false)
-          ...state.data!.featuredBusinesses.take(3).map((biz) => BusinessCard(business: biz)),
+          SizedBox(
+            height: 190,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: 3,
+              itemBuilder: (_, __) => const Padding(
+                padding: EdgeInsets.only(right: 12),
+                child: SkeletonLoader(width: 150, height: 190, borderRadius: 16),
+              ),
+            ),
+          )
+        else if (state.data != null)
+          SizedBox(
+            height: 190,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: state.data!.popularNearby.length,
+              itemBuilder: (_, index) {
+                final biz = state.data!.popularNearby[index];
+                return _buildNearbyCard(biz, theme, isDark, context);
+              },
+            ),
+          ),
       ],
     );
   }
+
+  Widget _buildNearbyCard(dynamic biz, ThemeData theme, bool isDark, BuildContext context) {
+    // Format rating to 1 decimal
+    final ratingStr = () {
+      final r = double.tryParse(biz.overallRating.toString()) ?? 0.0;
+      return r == 0.0 ? '—' : r.toStringAsFixed(1);
+    }();
+
+    // Distance may already include unit: "1.8km", "210m" etc.
+    final distanceRaw = biz.distanceKm?.toString() ?? '';
+    final distanceStr = distanceRaw.isEmpty
+        ? null
+        : (distanceRaw.contains('km') || distanceRaw.contains('m'))
+            ? distanceRaw
+            : '${distanceRaw}km';
+
+    return GestureDetector(
+      onTap: () => context.push('/business/${biz.id}', extra: biz),
+      child: Container(
+        width: 150,
+        margin: const EdgeInsets.only(right: 12),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.darkSurface : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            if (!isDark)
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.06),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Hero(
+              tag: 'business-image-${biz.id}',
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                child: SmartImage(
+                  imageUrl: biz.coverUrl ?? biz.logoUrl,
+                  width: 150,
+                  height: 100,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          biz.businessName,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            height: 1.2,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        if (biz.categoryName != null) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            biz.categoryName,
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: Colors.grey,
+                              fontSize: 10,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ],
+                    ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Icon(Ionicons.star, size: 11, color: AppColors.starYellow),
+                        const SizedBox(width: 2),
+                        Text(
+                          ratingStr,
+                          style: theme.textTheme.labelSmall?.copyWith(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        if (distanceStr != null) ...[
+                          const Spacer(),
+                          Flexible(
+                            child: Text(
+                              distanceStr,
+                              style: theme.textTheme.labelSmall?.copyWith(
+                                color: AppColors.secondaryOrange,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 10,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+
+  // ── Dynamic Sections ──────────────────────────────────────────────────────
+
+  Widget _buildDynamicSection(dynamic section, ThemeData theme, bool isDark, BuildContext context) {
+    final businesses = section.businesses as List;
+    if (businesses.isEmpty) return const SizedBox.shrink();
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 28),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  section.sectionName as String,
+                  style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
+                Text('View All',
+                    style: theme.textTheme.bodyMedium?.copyWith(color: AppColors.secondaryOrange)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            height: 190,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: businesses.length,
+              itemBuilder: (_, index) {
+                final biz = businesses[index];
+                return _buildNearbyCard(biz, theme, isDark, context);
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
 }
+

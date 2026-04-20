@@ -7,7 +7,6 @@ import '../../providers/business_detail_provider.dart';
 import '../../../data/models/business_model.dart';
 import '../../../core/constants/colors.dart';
 import '../../widgets/common/smart_image.dart';
-import '../../widgets/common/skeleton_loader.dart';
 
 class BusinessDetailScreen extends ConsumerWidget {
   final int businessId;

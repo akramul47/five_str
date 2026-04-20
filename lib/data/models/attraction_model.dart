@@ -59,23 +59,23 @@ class AttractionModel {
   });
 
   factory AttractionModel.fromJson(Map<String, dynamic> json) {
+    int? safeInt(dynamic v) {
+      if (v == null) return null;
+      if (v is int) return v;
+      if (v is double) return v.toInt();
+      if (v is String) return int.tryParse(v);
+      return null;
+    }
+
     // Parse facilities which can be a string (JSON) or a list
     List<String> parseFacilities(dynamic value) {
       if (value is List) return value.map((e) => e.toString()).toList();
-      if (value is String) {
-        try {
-          // ignore: avoid_dynamic_calls
-          return (value as dynamic).toString().isNotEmpty ? [] : [];
-        } catch (_) {
-          return [];
-        }
-      }
       return [];
     }
 
     return AttractionModel(
-      id: json['id'] as int,
-      name: json['name'] as String,
+      id: safeInt(json['id']) ?? 0,
+      name: json['name'] as String? ?? '',
       slug: json['slug'] as String? ?? '',
       description: json['description'] as String?,
       type: json['type'] as String? ?? 'natural',
@@ -88,23 +88,22 @@ class AttractionModel {
       entryFee: json['entry_fee']?.toString() ?? '0',
       currency: json['currency'] as String? ?? 'BDT',
       overallRating: json['overall_rating']?.toString() ?? '0',
-      totalReviews: json['total_reviews'] as int? ?? 0,
-      totalViews: json['total_views'] as int? ?? 0,
+      totalReviews: safeInt(json['total_reviews']) ?? 0,
+      totalViews: safeInt(json['total_views']) ?? 0,
       discoveryScore: json['discovery_score']?.toString(),
-      estimatedDurationMinutes:
-          json['estimated_duration_minutes'] as int? ?? 0,
+      estimatedDurationMinutes: safeInt(json['estimated_duration_minutes']) ?? 0,
       difficultyLevel: json['difficulty_level'] as String? ?? 'easy',
       coverImageUrl: json['cover_image_url'] as String?,
       googleMapsUrl: json['google_maps_url'] as String?,
-      distance: (json['distance'] as num?)?.toDouble() ??
-          (json['distance_km'] as num?)?.toDouble(),
+      distance: (json['distance_km'] as num?)?.toDouble() ??
+          (json['distance'] as num?)?.toDouble(),
       facilities: parseFacilities(json['facilities']),
       bestTimeToVisit: json['best_time_to_visit'] is Map
           ? json['best_time_to_visit'] as Map<String, dynamic>
           : null,
       isFeatured: json['is_featured'] as bool? ?? false,
       isVerified: json['is_verified'] as bool? ?? false,
-      recentReviewsCount: json['recent_reviews_count'] as int?,
+      recentReviewsCount: safeInt(json['recent_reviews_count']),
     );
   }
 

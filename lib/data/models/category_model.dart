@@ -11,9 +11,16 @@ class CategoryInfo {
   });
 
   factory CategoryInfo.fromJson(Map<String, dynamic> json) {
+    int? safeInt(dynamic v) {
+      if (v == null) return null;
+      if (v is int) return v;
+      if (v is double) return v.toInt();
+      if (v is String) return int.tryParse(v);
+      return null;
+    }
     return CategoryInfo(
-      id: json['id'] as int,
-      name: json['name'] as String,
+      id: safeInt(json['id']) ?? 0,
+      name: json['name'] as String? ?? '',
       slug: json['slug'] as String? ?? '',
     );
   }
@@ -62,21 +69,28 @@ class CategoryModel {
   });
 
   factory CategoryModel.fromJson(Map<String, dynamic> json) {
+    int? safeInt(dynamic v) {
+      if (v == null) return null;
+      if (v is int) return v;
+      if (v is double) return v.toInt();
+      if (v is String) return int.tryParse(v);
+      return null;
+    }
     return CategoryModel(
-      id: json['id'] as int,
-      name: json['name'] as String,
+      id: safeInt(json['id']) ?? 0,
+      name: json['name'] as String? ?? '',
       slug: json['slug'] as String? ?? '',
       parentId: json['parent_id']?.toString(),
-      level: json['level'] as int? ?? 1,
+      level: safeInt(json['level']) ?? 1,
       iconImage: json['icon_image'] as String?,
       bannerImage: json['banner_image'] as String?,
       description: json['description'] as String?,
       colorCode: json['color_code'] as String? ?? '#6366F1',
-      sortOrder: json['sort_order'] as int? ?? 0,
+      sortOrder: safeInt(json['sort_order']) ?? 0,
       isFeatured: json['is_featured'] as bool? ?? false,
       isPopular: json['is_popular'] as bool? ?? false,
       isActive: json['is_active'] as bool? ?? true,
-      totalBusinesses: json['total_businesses'] as int? ?? 0,
+      totalBusinesses: safeInt(json['business_count']) ?? safeInt(json['total_businesses']) ?? 0,
       subcategories: (json['subcategories'] as List<dynamic>?)
           ?.map((e) => CategoryModel.fromJson(e as Map<String, dynamic>))
           .toList(),

@@ -121,6 +121,17 @@ class BusinessModel {
   });
 
   factory BusinessModel.fromJson(Map<String, dynamic> json) {
+    // Safe parsers — API occasionally returns numeric fields as strings
+    int? safeInt(dynamic v) {
+      if (v == null) return null;
+      if (v is int) return v;
+      if (v is double) return v.toInt();
+      if (v is String) return int.tryParse(v);
+      return null;
+    }
+
+    String? safeStr(dynamic v) => v?.toString();
+
     // Handle logo_image which can be string or object
     BusinessImages? images;
     if (json['images'] != null) {
@@ -135,35 +146,35 @@ class BusinessModel {
     }
 
     return BusinessModel(
-      id: json['id'] as int,
-      businessName: json['business_name'] as String,
-      slug: json['slug'] as String? ?? '',
-      description: json['description'] as String?,
-      landmark: json['landmark'] as String?,
-      area: json['area'] as String?,
-      city: json['city'] as String?,
-      overallRating: json['overall_rating']?.toString() ?? '0',
-      priceRange: json['price_range'] as int? ?? 0,
-      totalReviews: json['total_reviews'] as int?,
+      id: safeInt(json['id']) ?? 0,
+      businessName: safeStr(json['business_name']) ?? '',
+      slug: safeStr(json['slug']) ?? '',
+      description: safeStr(json['description']),
+      landmark: safeStr(json['landmark']),
+      area: safeStr(json['area']),
+      city: safeStr(json['city']),
+      overallRating: safeStr(json['overall_rating']) ?? '0',
+      priceRange: safeInt(json['price_range']) ?? 0,
+      totalReviews: safeInt(json['total_reviews']),
       isVerified: json['is_verified'] as bool? ?? false,
       isFeatured: json['is_featured'] as bool? ?? false,
-      distanceKm: json['distance_km']?.toString() ?? json['distance']?.toString(),
-      categoryName: json['category_name'] as String?,
-      subcategoryName: json['subcategory_name'] as String?,
+      distanceKm: safeStr(json['distance_km']) ?? safeStr(json['distance']),
+      categoryName: safeStr(json['category_name']),
+      subcategoryName: safeStr(json['subcategory_name']),
       images: images,
-      category: json['category'] != null
+      category: json['category'] != null && json['category'] is Map
           ? CategoryInfo.fromJson(json['category'] as Map<String, dynamic>)
           : null,
-      type: json['type'] as String?,
+      type: safeStr(json['type']),
       openingStatus: json['opening_status'] != null
           ? OpeningStatus.fromJson(
               json['opening_status'] as Map<String, dynamic>)
           : null,
-      trendScore: json['trend_score']?.toString(),
-      viewCount: json['view_count'] as int?,
+      trendScore: safeStr(json['trend_score']),
+      viewCount: safeInt(json['view_count']),
       isNational: json['is_national'] as bool? ?? false,
-      serviceCoverage: json['service_coverage'] as String?,
-      businessModel: json['business_model'] as String?,
+      serviceCoverage: safeStr(json['service_coverage']),
+      businessModel: safeStr(json['business_model']),
     );
   }
 
