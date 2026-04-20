@@ -28,16 +28,36 @@ class HomeScreen extends ConsumerWidget {
               child: SafeArea(
                 bottom: false,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+                  padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
                   child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'Find Your\nFavorite Places',
-                        style: theme.textTheme.displaySmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(Ionicons.location, color: AppColors.primaryYellow, size: 14),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Current Location',
+                                style: theme.textTheme.labelMedium?.copyWith(
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Find Your Favorite Places',
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                        ],
                       ),
                       Container(
                         decoration: BoxDecoration(
@@ -156,7 +176,11 @@ class HomeScreen extends ConsumerWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Top Services', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+              Text('Top Services', 
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: -0.3,
+                )),
               GestureDetector(
                 onTap: () {},
                 child: Text('View All',
@@ -280,7 +304,10 @@ class HomeScreen extends ConsumerWidget {
                   const SizedBox(width: 6),
                   Text(
                     'Popular Services Nearby',
-                    style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: -0.3,
+                    ),
                   ),
                 ],
               ),
@@ -461,7 +488,10 @@ class HomeScreen extends ConsumerWidget {
               children: [
                 Text(
                   section.sectionName as String,
-                  style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: -0.3,
+                  ),
                 ),
                 Text('View All',
                     style: theme.textTheme.bodyMedium?.copyWith(color: AppColors.secondaryOrange)),
