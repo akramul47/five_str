@@ -61,7 +61,6 @@ class BusinessDetailScreen extends ConsumerWidget {
       debugPrint('INITIAL BUSINESS PASS DETECTED: ${initialBusiness!.businessName}');
     }
     final businessName = detail?.businessName ?? initialBusiness?.businessName ?? 'Loading...';
-    final distanceKm = detail?.distanceKm ?? initialBusiness?.distanceKm;
     final ratingValue = detail?.ratingValue ?? initialBusiness?.ratingValue ?? 0.0;
     final description = detail?.description ?? initialBusiness?.description;
 
@@ -198,21 +197,21 @@ class BusinessDetailScreen extends ConsumerWidget {
                   // Subtitles
                   Row(
                     children: [
-                      const Icon(Ionicons.location_outline,
-                          size: 16, color: Colors.grey),
-                      const SizedBox(width: 4),
-                      Text(
-                        '${distanceKm ?? '--'} Km',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey,
-                        ),
-                      ),
-                      const SizedBox(width: 24),
                       const Icon(Ionicons.star,
                           size: 16, color: AppColors.primaryYellow),
                       const SizedBox(width: 4),
                       Text(
                         '$ratingValue Rating',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: Colors.grey,
+                        ),
+                      ),
+                      const Spacer(),
+                      const Icon(Ionicons.location_outline,
+                          size: 16, color: Colors.grey),
+                      const SizedBox(width: 4),
+                      Text(
+                        displayData?.formattedDistance ?? '--',
                         style: theme.textTheme.bodyMedium?.copyWith(
                           color: Colors.grey,
                         ),

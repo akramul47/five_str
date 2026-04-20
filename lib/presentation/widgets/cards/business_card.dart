@@ -146,14 +146,16 @@ class BusinessCard extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
-                      if (business.distanceKm != null)
+                      if (business.formattedDistance != null) ...[
+                        const SizedBox(width: 8),
                         Text(
-                          '${business.distanceKm} km',
+                          business.formattedDistance!,
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: theme.colorScheme.primary,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
+                      ],
                     ],
                   ),
                 ],

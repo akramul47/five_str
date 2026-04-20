@@ -186,6 +186,29 @@ class BusinessModel {
 
   /// Parsed rating as double.
   double get ratingValue => double.tryParse(overallRating) ?? 0.0;
+
+  /// Formatted distance to 2 decimal places.
+  String? get formattedDistance {
+    if (distanceKm == null || distanceKm!.isEmpty) return null;
+    
+    // Check if it already has a unit
+    final hasUnit = distanceKm!.toLowerCase().contains('km') || 
+                  distanceKm!.toLowerCase().contains('m');
+    
+    if (hasUnit) {
+      // Try to extract number and format it
+      final numberPart = distanceKm!.replaceAll(RegExp(r'[^0-9.]'), '');
+      final value = double.tryParse(numberPart);
+      if (value == null) return distanceKm;
+      
+      final unit = distanceKm!.replaceAll(RegExp(r'[0-9.]'), '').trim();
+      return '${value.toStringAsFixed(2)} $unit';
+    } else {
+      final value = double.tryParse(distanceKm!);
+      if (value == null) return distanceKm;
+      return '${value.toStringAsFixed(2)} km';
+    }
+  }
 }
 
 /// Extended business detail model (from /businesses/{id}).

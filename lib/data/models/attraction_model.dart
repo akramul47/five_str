@@ -109,4 +109,10 @@ class AttractionModel {
 
   double get ratingValue => double.tryParse(overallRating) ?? 0.0;
   double get entryFeeValue => double.tryParse(entryFee) ?? 0.0;
+
+  /// Formatted distance to 2 decimal places.
+  String? get formattedDistance {
+    if (distance == null) return null;
+    return '${distance!.toStringAsFixed(2)} km';
+  }
 }

@@ -335,13 +335,8 @@ class HomeScreen extends ConsumerWidget {
       return r == 0.0 ? '—' : r.toStringAsFixed(1);
     }();
 
-    // Distance may already include unit: "1.8km", "210m" etc.
-    final distanceRaw = biz.distanceKm?.toString() ?? '';
-    final distanceStr = distanceRaw.isEmpty
-        ? null
-        : (distanceRaw.contains('km') || distanceRaw.contains('m'))
-            ? distanceRaw
-            : '${distanceRaw}km';
+    // Use model's formatted distance
+    final distanceStr = biz.formattedDistance;
 
     return GestureDetector(
       onTap: () => context.push('/business/${biz.id}', extra: biz),
