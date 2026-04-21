@@ -49,20 +49,28 @@ class BusinessDetailScreen extends ConsumerWidget {
       return null;
     }
 
-    final coverImage = getFirstValid([
-      detail?.coverUrl,
-      detail?.logoUrl,
-      initialBusiness?.coverUrl,
-      initialBusiness?.logoUrl,
-    ]) ?? '';
-    
+    final coverImage =
+        getFirstValid([
+          detail?.coverUrl,
+          detail?.logoUrl,
+          initialBusiness?.coverUrl,
+          initialBusiness?.logoUrl,
+        ]) ??
+        '';
+
     debugPrint('DETAIL COVER IMAGE RESOLVED: $coverImage');
     if (initialBusiness != null) {
-      debugPrint('INITIAL BUSINESS PASS DETECTED: ${initialBusiness!.businessName}');
+      debugPrint(
+        'INITIAL BUSINESS PASS DETECTED: ${initialBusiness!.businessName}',
+      );
     }
-    final businessName = detail?.businessName ?? initialBusiness?.businessName ?? 'Loading...';
-    final ratingValue = detail?.ratingValue ?? initialBusiness?.ratingValue ?? 0.0;
+    final businessName =
+        detail?.businessName ?? initialBusiness?.businessName ?? 'Loading...';
+    final ratingValue =
+        detail?.ratingValue ?? initialBusiness?.ratingValue ?? 0.0;
     final description = detail?.description ?? initialBusiness?.description;
+    final formattedDistance =
+        detail?.formattedDistance ?? initialBusiness?.formattedDistance;
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
@@ -90,8 +98,10 @@ class BusinessDetailScreen extends ConsumerWidget {
             ),
             flexibleSpace: LayoutBuilder(
               builder: (context, constraints) {
-                final isCollapsed = constraints.biggest.height <= MediaQuery.paddingOf(context).top + kToolbarHeight + 40;
-                
+                final isCollapsed =
+                    constraints.biggest.height <=
+                    MediaQuery.paddingOf(context).top + kToolbarHeight + 40;
+
                 return Stack(
                   fit: StackFit.expand,
                   children: [
@@ -111,6 +121,130 @@ class BusinessDetailScreen extends ConsumerWidget {
                             Container(
                               color: Colors.black.withValues(alpha: 0.3),
                             ),
+                          // Gradient for text readability
+                          Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                stops: const [0.4, 1.0],
+                                colors: [
+                                  Colors.transparent,
+                                  Colors.black.withValues(alpha: 0.9),
+                                ],
+                              ),
+                            ),
+                          ),
+                          // Overlay Content (Title, Category, Rating)
+                          Positioned(
+                            left: 24,
+                            right: 24,
+                            bottom: 46,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  businessName,
+                                  style: theme.textTheme.headlineSmall
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                        height: 1.1,
+                                      ),
+                                ),
+                                const SizedBox(height: 10),
+                                Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    // Rating pill
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4,
+                                      ),
+                                      decoration: BoxDecoration(
+                                        color: Colors.black.withValues(
+                                          alpha: 0.5,
+                                        ),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(
+                                          color: Colors.white24,
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(
+                                            Ionicons.star,
+                                            color: AppColors.primaryYellow,
+                                            size: 14,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            '$ratingValue ${displayData?.totalReviews != null ? '(${displayData!.totalReviews})' : ''}',
+                                            style: theme.textTheme.labelMedium
+                                                ?.copyWith(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    if (displayData?.priceRange != null &&
+                                        displayData!.priceRange! > 0) ...[
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        List.filled(
+                                          displayData!.priceRange!,
+                                          '\$',
+                                        ).join(''),
+                                        style: theme.textTheme.bodyMedium
+                                            ?.copyWith(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                      ),
+                                    ],
+                                    if (formattedDistance != null) ...[
+                                      const Spacer(),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 8,
+                                          vertical: 4,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.black.withValues(
+                                            alpha: 0.6,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            const Icon(
+                                              Ionicons.location,
+                                              color: Colors.white,
+                                              size: 12,
+                                            ),
+                                            const SizedBox(width: 4),
+                                            Text(
+                                              formattedDistance,
+                                              style: theme.textTheme.labelSmall
+                                                  ?.copyWith(
+                                                    color: Colors.white,
+                                                  ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -131,7 +265,9 @@ class BusinessDetailScreen extends ConsumerWidget {
                               overflow: TextOverflow.ellipsis,
                               style: theme.textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.w600,
-                                color: isDark ? Colors.white : AppColors.deepNavy,
+                                color: isDark
+                                    ? Colors.white
+                                    : AppColors.deepNavy,
                               ),
                             ),
                           ),
@@ -154,20 +290,34 @@ class BusinessDetailScreen extends ConsumerWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
-                        decoration: BoxDecoration(
-                          color: AppColors.primaryYellow.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Text(
-                          'Popular',
-                          style: theme.textTheme.labelMedium?.copyWith(
-                            color: AppColors.primaryYellow,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                      Builder(
+                        builder: (context) {
+                          final catName =
+                              displayData?.category?.name ??
+                              displayData?.categoryName;
+                          if (catName != null && catName.isNotEmpty) {
+                            return Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.primaryYellow.withValues(
+                                  alpha: 0.15,
+                                ),
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                catName,
+                                style: theme.textTheme.labelMedium?.copyWith(
+                                  color: AppColors.primaryYellow,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        },
                       ),
                       Row(
                         children: [
@@ -177,7 +327,8 @@ class BusinessDetailScreen extends ConsumerWidget {
                               if (detail?.latitude != null &&
                                   detail?.longitude != null) {
                                 final uri = Uri.parse(
-                                    'google.navigation:q=${detail!.latitude},${detail!.longitude}');
+                                  'google.navigation:q=${detail!.latitude},${detail!.longitude}',
+                                );
                                 if (await canLaunchUrl(uri)) {
                                   await launchUrl(uri);
                                 }
@@ -200,7 +351,9 @@ class BusinessDetailScreen extends ConsumerWidget {
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: AppColors.secondaryOrange.withValues(alpha: 0.15),
+                              color: AppColors.secondaryOrange.withValues(
+                                alpha: 0.15,
+                              ),
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(
@@ -213,47 +366,7 @@ class BusinessDetailScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
-
-                  const SizedBox(height: 24),
-
-                  // Title
-                  Text(
-                    businessName,
-                    style: theme.textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  // Subtitles
-                  Row(
-                    children: [
-                      const Icon(Ionicons.star,
-                          size: 16, color: AppColors.primaryYellow),
-                      const SizedBox(width: 4),
-                      Text(
-                        '$ratingValue Rating',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey,
-                        ),
-                      ),
-                      const Spacer(),
-                      const Icon(Ionicons.location_outline,
-                          size: 16, color: Colors.grey),
-                      const SizedBox(width: 4),
-                      Text(
-                        displayData?.formattedDistance ?? '--',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 24),
-
+                  const SizedBox(height: 8),
                   // Description
                   if (description != null && description.isNotEmpty)
                     _ExpandableDescription(
@@ -324,7 +437,8 @@ class BusinessDetailScreen extends ConsumerWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           SmartImage(
-                            imageUrl: item.imageUrl ?? displayData!.logoUrl ?? '',
+                            imageUrl:
+                                item.imageUrl ?? displayData!.logoUrl ?? '',
                             width: 60,
                             height: 60,
                             isRound: true,
@@ -371,105 +485,119 @@ class BusinessDetailScreen extends ConsumerWidget {
             ),
             const SliverToBoxAdapter(child: SizedBox(height: 16)),
             SliverList(
-              delegate: SliverChildBuilderDelegate(
-                (context, index) {
-                  final review = state.reviews[index];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
-                    child: Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: isDark ? AppColors.darkBackground : Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          if (!isDark)
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                        ],
-                      ),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (review.user?.profileImage != null)
-                            SmartImage(
-                              imageUrl: review.user!.profileImage,
-                              width: 40,
-                              height: 40,
-                              isRound: true,
-                            )
-                          else
-                            const CircleAvatar(
-                              radius: 20,
-                              child: Icon(Icons.person),
-                            ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final review = state.reviews[index];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24.0,
+                    vertical: 8.0,
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: isDark ? AppColors.darkBackground : Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        if (!isDark)
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                      ],
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (review.user?.profileImage != null)
+                          SmartImage(
+                            imageUrl: review.user!.profileImage,
+                            width: 40,
+                            height: 40,
+                            isRound: true,
+                          )
+                        else
+                          const CircleAvatar(
+                            radius: 20,
+                            child: Icon(Icons.person),
+                          ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        review.user?.name ?? 'Anonymous',
+                                        style: theme.textTheme.titleMedium
+                                            ?.copyWith(
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                      ),
+                                      Text(
+                                        review.createdAt ?? '',
+                                        style: theme.textTheme.bodySmall
+                                            ?.copyWith(color: Colors.grey),
+                                      ),
+                                    ],
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.green.withValues(
+                                        alpha: 0.15,
+                                      ),
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Row(
                                       children: [
-                                        Text(
-                                          review.user?.name ?? 'Anonymous',
-                                          style: theme.textTheme.titleMedium?.copyWith(
-                                            fontWeight: FontWeight.bold,
-                                          ),
+                                        const Icon(
+                                          Ionicons.star,
+                                          color: Colors.green,
+                                          size: 12,
                                         ),
+                                        const SizedBox(width: 4),
                                         Text(
-                                          review.createdAt ?? '',
-                                          style: theme.textTheme.bodySmall?.copyWith(
-                                            color: Colors.grey,
-                                          ),
+                                          '${review.overallRating}',
+                                          style: theme.textTheme.labelMedium
+                                              ?.copyWith(
+                                                color: Colors.green,
+                                                fontWeight: FontWeight.bold,
+                                              ),
                                         ),
                                       ],
                                     ),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                      decoration: BoxDecoration(
-                                        color: Colors.green.withValues(alpha: 0.15),
-                                        borderRadius: BorderRadius.circular(16),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          const Icon(Ionicons.star, color: Colors.green, size: 12),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            '${review.overallRating}',
-                                            style: theme.textTheme.labelMedium?.copyWith(
-                                              color: Colors.green,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  review.reviewText,
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: isDark ? Colors.white70 : Colors.black87,
-                                    height: 1.4,
                                   ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                review.reviewText,
+                                style: theme.textTheme.bodyMedium?.copyWith(
+                                  color: isDark
+                                      ? Colors.white70
+                                      : Colors.black87,
+                                  height: 1.4,
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
-                  );
-                },
-                childCount: state.reviews.length,
-              ),
+                  ),
+                );
+              }, childCount: state.reviews.length),
             ),
             const SliverToBoxAdapter(child: SizedBox(height: 32)),
           ],
@@ -504,34 +632,39 @@ class _ExpandableDescriptionState extends State<_ExpandableDescription> {
             maxLines: 3,
             overflow: TextOverflow.ellipsis,
           ),
-          secondChild: Text(
-            widget.text,
-            style: widget.style,
-          ),
-          crossFadeState: _isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+          secondChild: Text(widget.text, style: widget.style),
+          crossFadeState: _isExpanded
+              ? CrossFadeState.showSecond
+              : CrossFadeState.showFirst,
           duration: const Duration(milliseconds: 200),
         ),
-        LayoutBuilder(builder: (context, constraints) {
-          final span = TextSpan(text: widget.text, style: widget.style);
-          final tp = TextPainter(text: span, maxLines: 3, textDirection: TextDirection.ltr);
-          tp.layout(maxWidth: constraints.maxWidth);
-          if (tp.didExceedMaxLines) {
-            return GestureDetector(
-              onTap: () => setState(() => _isExpanded = !_isExpanded),
-              child: Padding(
-                padding: const EdgeInsets.only(top: 6.0),
-                child: Text(
-                  _isExpanded ? 'Show less' : 'Read more',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.secondaryOrange,
-                    fontWeight: FontWeight.bold,
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final span = TextSpan(text: widget.text, style: widget.style);
+            final tp = TextPainter(
+              text: span,
+              maxLines: 3,
+              textDirection: TextDirection.ltr,
+            );
+            tp.layout(maxWidth: constraints.maxWidth);
+            if (tp.didExceedMaxLines) {
+              return GestureDetector(
+                onTap: () => setState(() => _isExpanded = !_isExpanded),
+                child: Padding(
+                  padding: const EdgeInsets.only(top: 6.0),
+                  child: Text(
+                    _isExpanded ? 'Show less' : 'Read more',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.secondaryOrange,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
-              ),
-            );
-          }
-          return const SizedBox.shrink();
-        }),
+              );
+            }
+            return const SizedBox.shrink();
+          },
+        ),
       ],
     );
   }
