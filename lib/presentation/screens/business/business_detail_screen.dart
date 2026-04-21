@@ -75,39 +75,71 @@ class BusinessDetailScreen extends ConsumerWidget {
               color: isDark ? AppColors.primaryYellow : AppColors.deepNavy,
             ),
             backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
-            flexibleSpace: FlexibleSpaceBar(
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Hero(
-                    tag: 'business-image-$businessId',
-                    child: SmartImage(
-                      imageUrl: coverImage,
-                      fit: BoxFit.cover,
-                    ),
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(30.0),
+              child: Container(
+                height: 31.0, // Extra 1px to prevent sub-pixel rendering gap
+                transform: Matrix4.translationValues(0, 1, 0),
+                decoration: BoxDecoration(
+                  color: isDark ? AppColors.darkSurface : Colors.white,
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(30),
                   ),
-                  // Dark overlay if dark mode for better contrast
-                  if (isDark)
-                    Container(
-                      color: Colors.black.withValues(alpha: 0.3),
-                    ),
-                  // The rounded overlapping trick
-                  Positioned(
-                    bottom: -1,
-                    left: 0,
-                    right: 0,
-                    child: Container(
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: isDark ? AppColors.darkSurface : Colors.white,
-                        borderRadius: const BorderRadius.vertical(
-                          top: Radius.circular(30),
-                        ),
+                ),
+              ),
+            ),
+            flexibleSpace: LayoutBuilder(
+              builder: (context, constraints) {
+                final isCollapsed = constraints.biggest.height <= MediaQuery.paddingOf(context).top + kToolbarHeight + 40;
+                
+                return Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    FlexibleSpaceBar(
+                      background: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          Hero(
+                            tag: 'business-image-$businessId',
+                            child: SmartImage(
+                              imageUrl: coverImage,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          // Dark overlay if dark mode for better contrast
+                          if (isDark)
+                            Container(
+                              color: Colors.black.withValues(alpha: 0.3),
+                            ),
+                        ],
                       ),
                     ),
-                  ),
-                ],
-              ),
+                    // Dynamic Title shown only when scrolled up
+                    if (isCollapsed)
+                      Positioned(
+                        top: MediaQuery.paddingOf(context).top,
+                        left: 48,
+                        right: 48,
+                        height: kToolbarHeight,
+                        child: Center(
+                          child: AnimatedOpacity(
+                            duration: const Duration(milliseconds: 200),
+                            opacity: 1.0,
+                            child: Text(
+                              businessName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? Colors.white : AppColors.deepNavy,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
             ),
           ),
 
@@ -187,8 +219,9 @@ class BusinessDetailScreen extends ConsumerWidget {
                   // Title
                   Text(
                     businessName,
-                    style: theme.textTheme.displaySmall?.copyWith(
-                      fontWeight: FontWeight.bold,
+                    style: theme.textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: -0.5,
                     ),
                   ),
 
@@ -223,8 +256,8 @@ class BusinessDetailScreen extends ConsumerWidget {
 
                   // Description
                   if (description != null && description.isNotEmpty)
-                    Text(
-                      description,
+                    _ExpandableDescription(
+                      text: description,
                       style: theme.textTheme.bodyLarge?.copyWith(
                         color: isDark ? Colors.white70 : Colors.black87,
                         height: 1.5,
@@ -442,6 +475,64 @@ class BusinessDetailScreen extends ConsumerWidget {
           ],
         ],
       ),
+    );
+  }
+}
+
+class _ExpandableDescription extends StatefulWidget {
+  final String text;
+  final TextStyle? style;
+
+  const _ExpandableDescription({required this.text, this.style});
+
+  @override
+  State<_ExpandableDescription> createState() => _ExpandableDescriptionState();
+}
+
+class _ExpandableDescriptionState extends State<_ExpandableDescription> {
+  bool _isExpanded = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AnimatedCrossFade(
+          firstChild: Text(
+            widget.text,
+            style: widget.style,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+          ),
+          secondChild: Text(
+            widget.text,
+            style: widget.style,
+          ),
+          crossFadeState: _isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+          duration: const Duration(milliseconds: 200),
+        ),
+        LayoutBuilder(builder: (context, constraints) {
+          final span = TextSpan(text: widget.text, style: widget.style);
+          final tp = TextPainter(text: span, maxLines: 3, textDirection: TextDirection.ltr);
+          tp.layout(maxWidth: constraints.maxWidth);
+          if (tp.didExceedMaxLines) {
+            return GestureDetector(
+              onTap: () => setState(() => _isExpanded = !_isExpanded),
+              child: Padding(
+                padding: const EdgeInsets.only(top: 6.0),
+                child: Text(
+                  _isExpanded ? 'Show less' : 'Read more',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: AppColors.secondaryOrange,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            );
+          }
+          return const SizedBox.shrink();
+        }),
+      ],
     );
   }
 }
