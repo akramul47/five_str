@@ -9,29 +9,40 @@ class BusinessDetailState {
   final BusinessDetailModel? detail;
   final List<OfferingModel> offerings;
   final List<ReviewModel> reviews;
-  final bool isLoading;
+  final bool isLoadingDetail;
+  final bool isLoadingOfferings;
+  final bool isLoadingReviews;
   final String? error;
 
   const BusinessDetailState({
     this.detail,
     this.offerings = const [],
     this.reviews = const [],
-    this.isLoading = false,
+    this.isLoadingDetail = false,
+    this.isLoadingOfferings = false,
+    this.isLoadingReviews = false,
     this.error,
   });
+
+  /// Backward-compat shim used by the loading gate in the screen.
+  bool get isLoading => isLoadingDetail;
 
   BusinessDetailState copyWith({
     BusinessDetailModel? detail,
     List<OfferingModel>? offerings,
     List<ReviewModel>? reviews,
-    bool? isLoading,
+    bool? isLoadingDetail,
+    bool? isLoadingOfferings,
+    bool? isLoadingReviews,
     String? error,
   }) {
     return BusinessDetailState(
       detail: detail ?? this.detail,
       offerings: offerings ?? this.offerings,
       reviews: reviews ?? this.reviews,
-      isLoading: isLoading ?? this.isLoading,
+      isLoadingDetail: isLoadingDetail ?? this.isLoadingDetail,
+      isLoadingOfferings: isLoadingOfferings ?? this.isLoadingOfferings,
+      isLoadingReviews: isLoadingReviews ?? this.isLoadingReviews,
       error: error ?? this.error,
     );
   }
@@ -42,30 +53,41 @@ class BusinessDetailNotifier extends StateNotifier<BusinessDetailState> {
 
   BusinessDetailNotifier(this._ref) : super(const BusinessDetailState());
 
+  /// Loads only the core business detail — called immediately on screen open.
   Future<void> loadBusiness(int businessId) async {
-    state = state.copyWith(isLoading: true, error: null);
-
+    state = state.copyWith(isLoadingDetail: true, error: null);
     try {
       final repo = _ref.read(businessRepositoryProvider);
-
-      // We run all remote fetches concurrently to speed up the UX
-      final results = await Future.wait([
-        repo.getBusinessDetail(businessId),
-        repo.getBusinessOfferings(businessId),
-        repo.getBusinessReviews(businessId),
-      ]);
-
-      state = state.copyWith(
-        detail: results[0] as BusinessDetailModel,
-        offerings: results[1] as List<OfferingModel>,
-        reviews: results[2] as List<ReviewModel>,
-        isLoading: false,
-      );
+      final detail = await repo.getBusinessDetail(businessId);
+      state = state.copyWith(detail: detail, isLoadingDetail: false);
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: e.toString(),
-      );
+      state = state.copyWith(isLoadingDetail: false, error: e.toString());
+    }
+  }
+
+  /// Loads menu offerings — called lazily when the Menu tab is first opened.
+  Future<void> loadOfferings(int businessId) async {
+    if (state.isLoadingOfferings) return;
+    state = state.copyWith(isLoadingOfferings: true);
+    try {
+      final repo = _ref.read(businessRepositoryProvider);
+      final offerings = await repo.getBusinessOfferings(businessId);
+      state = state.copyWith(offerings: offerings, isLoadingOfferings: false);
+    } catch (e) {
+      state = state.copyWith(isLoadingOfferings: false);
+    }
+  }
+
+  /// Loads reviews — called lazily when the Ratings tab is first opened.
+  Future<void> loadReviews(int businessId) async {
+    if (state.isLoadingReviews) return;
+    state = state.copyWith(isLoadingReviews: true);
+    try {
+      final repo = _ref.read(businessRepositoryProvider);
+      final reviews = await repo.getBusinessReviews(businessId);
+      state = state.copyWith(reviews: reviews, isLoadingReviews: false);
+    } catch (e) {
+      state = state.copyWith(isLoadingReviews: false);
     }
   }
 }
@@ -74,7 +96,6 @@ final businessDetailProvider =
     StateNotifierProvider.family<BusinessDetailNotifier, BusinessDetailState, int>(
   (ref, businessId) {
     final notifier = BusinessDetailNotifier(ref);
-    // Auto-fetch when the provider is initialized
     notifier.loadBusiness(businessId);
     return notifier;
   },

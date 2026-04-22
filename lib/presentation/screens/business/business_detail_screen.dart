@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ionicons/ionicons.dart';
@@ -7,8 +8,11 @@ import '../../providers/business_detail_provider.dart';
 import '../../../data/models/business_model.dart';
 import '../../../core/constants/colors.dart';
 import '../../widgets/common/smart_image.dart';
+import 'tabs/overview_tab.dart';
+import 'tabs/menu_tab.dart';
+import 'tabs/ratings_tab.dart';
 
-class BusinessDetailScreen extends ConsumerWidget {
+class BusinessDetailScreen extends ConsumerStatefulWidget {
   final int businessId;
   final BusinessModel? initialBusiness;
 
@@ -19,653 +23,479 @@ class BusinessDetailScreen extends ConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final state = ref.watch(businessDetailProvider(businessId));
+  ConsumerState<BusinessDetailScreen> createState() =>
+      _BusinessDetailScreenState();
+}
+
+class _BusinessDetailScreenState extends ConsumerState<BusinessDetailScreen>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+  final _visitedTabs = <int>{0};
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 3, vsync: this);
+    _tabController.addListener(_onTabChanged);
+  }
+
+  void _onTabChanged() {
+    if (_tabController.indexIsChanging) return;
+    final idx = _tabController.index;
+    if (_visitedTabs.contains(idx)) return;
+    setState(() => _visitedTabs.add(idx));
+    final notifier =
+        ref.read(businessDetailProvider(widget.businessId).notifier);
+    if (idx == 1) notifier.loadOfferings(widget.businessId);
+    if (idx == 2) notifier.loadReviews(widget.businessId);
+  }
+
+  @override
+  void dispose() {
+    _tabController.removeListener(_onTabChanged);
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.watch(businessDetailProvider(widget.businessId));
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
-
     final detail = state.detail;
-    final displayData = detail ?? initialBusiness;
+    final displayData = detail ?? widget.initialBusiness;
 
     if (state.isLoading && displayData == null) {
       return Scaffold(
         body: Center(
-          child: CircularProgressIndicator(color: AppColors.primaryYellow),
-        ),
+            child: CircularProgressIndicator(color: AppColors.primaryYellow)),
       );
     }
-
     if (state.error != null && displayData == null) {
       return Scaffold(
-        appBar: AppBar(),
-        body: Center(child: Text('Error: ${state.error}')),
-      );
+          appBar: AppBar(),
+          body: Center(child: Text('Error: ${state.error}')));
     }
 
-    String? getFirstValid(List<String?> items) {
-      for (final item in items) {
-        if (item != null && item.trim().isNotEmpty) return item;
+    String? firstValid(List<String?> items) {
+      for (final v in items) {
+        if (v != null && v.trim().isNotEmpty) return v;
       }
       return null;
     }
 
-    final coverImage =
-        getFirstValid([
+    final coverImage = firstValid([
           detail?.coverUrl,
           detail?.logoUrl,
-          initialBusiness?.coverUrl,
-          initialBusiness?.logoUrl,
+          widget.initialBusiness?.coverUrl,
+          widget.initialBusiness?.logoUrl,
         ]) ??
         '';
-
-    debugPrint('DETAIL COVER IMAGE RESOLVED: $coverImage');
-    if (initialBusiness != null) {
-      debugPrint(
-        'INITIAL BUSINESS PASS DETECTED: ${initialBusiness!.businessName}',
-      );
-    }
     final businessName =
-        detail?.businessName ?? initialBusiness?.businessName ?? 'Loading...';
+        detail?.businessName ?? widget.initialBusiness?.businessName ?? '';
     final ratingValue =
-        detail?.ratingValue ?? initialBusiness?.ratingValue ?? 0.0;
-    final description = detail?.description ?? initialBusiness?.description;
+        detail?.ratingValue ?? widget.initialBusiness?.ratingValue ?? 0.0;
+    final description =
+        detail?.description ?? widget.initialBusiness?.description;
     final formattedDistance =
-        detail?.formattedDistance ?? initialBusiness?.formattedDistance;
+        detail?.formattedDistance ?? widget.initialBusiness?.formattedDistance;
+    final phoneNumber = detail?.businessPhone;
+    final catName = displayData?.category?.name ?? displayData?.categoryName;
+    final priceRange = displayData?.priceRange ?? 0;
+    final totalReviews = displayData?.totalReviews;
+
+    final bgColor = isDark ? AppColors.darkSurface : Colors.white;
 
     return Scaffold(
-      backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
-      body: CustomScrollView(
-        slivers: [
+      backgroundColor: bgColor,
+      body: NestedScrollView(
+        headerSliverBuilder: (context, innerBoxIsScrolled) => [
+          // ── Cover Image SliverAppBar ─────────────────────────────
           SliverAppBar(
             expandedHeight: 300.0,
             pinned: true,
-            iconTheme: IconThemeData(
-              color: isDark ? AppColors.primaryYellow : AppColors.deepNavy,
-            ),
-            backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
+            forceElevated: innerBoxIsScrolled,
+            iconTheme: const IconThemeData(color: Colors.white),
+            backgroundColor: bgColor,
             bottom: PreferredSize(
               preferredSize: const Size.fromHeight(30.0),
               child: Container(
-                height: 31.0, // Extra 1px to prevent sub-pixel rendering gap
+                height: 31.0,
                 transform: Matrix4.translationValues(0, 1, 0),
                 decoration: BoxDecoration(
-                  color: isDark ? AppColors.darkSurface : Colors.white,
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(30),
-                  ),
+                  color: bgColor,
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(30)),
                 ),
               ),
             ),
-            flexibleSpace: LayoutBuilder(
-              builder: (context, constraints) {
-                final isCollapsed =
-                    constraints.biggest.height <=
-                    MediaQuery.paddingOf(context).top + kToolbarHeight + 40;
-
-                return Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    FlexibleSpaceBar(
-                      background: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          Hero(
-                            tag: 'business-image-$businessId',
-                            child: SmartImage(
-                              imageUrl: coverImage,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                          // Dark overlay if dark mode for better contrast
-                          if (isDark)
-                            Container(
-                              color: Colors.black.withValues(alpha: 0.3),
-                            ),
-                          // Gradient for text readability
-                          Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                stops: const [0.4, 1.0],
-                                colors: [
-                                  Colors.transparent,
-                                  Colors.black.withValues(alpha: 0.9),
-                                ],
-                              ),
-                            ),
-                          ),
-                          // Overlay Content (Title, Category, Rating)
-                          Positioned(
-                            left: 24,
-                            right: 24,
-                            bottom: 46,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  businessName,
-                                  style: theme.textTheme.headlineSmall
-                                      ?.copyWith(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                        height: 1.1,
-                                      ),
-                                ),
-                                const SizedBox(height: 10),
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.center,
-                                  children: [
-                                    // Rating pill
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 8,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.black.withValues(
-                                          alpha: 0.5,
-                                        ),
-                                        borderRadius: BorderRadius.circular(12),
-                                        border: Border.all(
-                                          color: Colors.white24,
-                                        ),
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          const Icon(
-                                            Ionicons.star,
-                                            color: AppColors.primaryYellow,
-                                            size: 14,
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Text(
-                                            '$ratingValue ${displayData?.totalReviews != null ? '(${displayData!.totalReviews})' : ''}',
-                                            style: theme.textTheme.labelMedium
-                                                ?.copyWith(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.w600,
-                                                ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    if (displayData?.priceRange != null &&
-                                        displayData!.priceRange! > 0) ...[
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        List.filled(
-                                          displayData!.priceRange!,
-                                          '\$',
-                                        ).join(''),
-                                        style: theme.textTheme.bodyMedium
-                                            ?.copyWith(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                      ),
-                                    ],
-                                    if (formattedDistance != null) ...[
-                                      const Spacer(),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 4,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: Colors.black.withValues(
-                                            alpha: 0.6,
-                                          ),
-                                          borderRadius: BorderRadius.circular(
-                                            16,
-                                          ),
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            const Icon(
-                                              Ionicons.location,
-                                              color: Colors.white,
-                                              size: 12,
-                                            ),
-                                            const SizedBox(width: 4),
-                                            Text(
-                                              formattedDistance,
-                                              style: theme.textTheme.labelSmall
-                                                  ?.copyWith(
-                                                    color: Colors.white,
-                                                  ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
+            flexibleSpace: LayoutBuilder(builder: (ctx, constraints) {
+              final isCollapsed = constraints.biggest.height <=
+                  MediaQuery.paddingOf(ctx).top + kToolbarHeight + 40;
+              return Stack(fit: StackFit.expand, children: [
+                FlexibleSpaceBar(
+                  background: Stack(fit: StackFit.expand, children: [
+                    Hero(
+                      tag: 'business-image-${widget.businessId}',
+                      child:
+                          SmartImage(imageUrl: coverImage, fit: BoxFit.cover),
                     ),
-                    // Dynamic Title shown only when scrolled up
-                    if (isCollapsed)
-                      Positioned(
-                        top: MediaQuery.paddingOf(context).top,
-                        left: 48,
-                        right: 48,
-                        height: kToolbarHeight,
-                        child: Center(
-                          child: AnimatedOpacity(
-                            duration: const Duration(milliseconds: 200),
-                            opacity: 1.0,
-                            child: Text(
-                              businessName,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: theme.textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: isDark
-                                    ? Colors.white
-                                    : AppColors.deepNavy,
-                              ),
-                            ),
-                          ),
+                    if (isDark)
+                      Container(color: Colors.black.withValues(alpha: 0.3)),
+                    Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          stops: const [0.4, 1.0],
+                          colors: [
+                            Colors.transparent,
+                            Colors.black.withValues(alpha: 0.9),
+                          ],
                         ),
                       ),
-                  ],
-                );
-              },
-            ),
-          ),
-
-          // Main Content
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Top Pills Row
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Builder(
-                        builder: (context) {
-                          final catName =
-                              displayData?.category?.name ??
-                              displayData?.categoryName;
-                          if (catName != null && catName.isNotEmpty) {
-                            return Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.primaryYellow.withValues(
-                                  alpha: 0.15,
-                                ),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: Text(
-                                catName,
-                                style: theme.textTheme.labelMedium?.copyWith(
-                                  color: AppColors.primaryYellow,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            );
-                          }
-                          return const SizedBox.shrink();
-                        },
-                      ),
-                      Row(
+                    ),
+                    Positioned(
+                      left: 24,
+                      right: 24,
+                      bottom: 46,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          GestureDetector(
-                            onTap: () async {
-                              // Get Directions Logic
-                              if (detail?.latitude != null &&
-                                  detail?.longitude != null) {
-                                final uri = Uri.parse(
-                                  'google.navigation:q=${detail!.latitude},${detail!.longitude}',
-                                );
-                                if (await canLaunchUrl(uri)) {
-                                  await launchUrl(uri);
-                                }
-                              }
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
+                          Text(
+                            businessName,
+                            style: theme.textTheme.headlineSmall?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                height: 1.1),
+                          ),
+                          const SizedBox(height: 10),
+                          Row(children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 4),
                               decoration: BoxDecoration(
-                                color: Colors.green.withValues(alpha: 0.15),
-                                shape: BoxShape.circle,
+                                color: Colors.black.withValues(alpha: 0.5),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Colors.white24),
                               ),
-                              child: const Icon(
-                                Ionicons.location_sharp,
-                                color: Colors.green,
-                                size: 20,
+                              child: Row(mainAxisSize: MainAxisSize.min, children: [
+                                const Icon(Ionicons.star,
+                                    color: AppColors.primaryYellow, size: 14),
+                                const SizedBox(width: 4),
+                                Text(
+                                  '$ratingValue${totalReviews != null ? ' ($totalReviews)' : ''}',
+                                  style: theme.textTheme.labelMedium?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600),
+                                ),
+                              ]),
+                            ),
+                            if (priceRange > 0) ...[
+                              const SizedBox(width: 8),
+                              Text(List.filled(priceRange, '\$').join(''),
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold)),
+                            ],
+                            if (formattedDistance != null) ...[
+                              const Spacer(),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withValues(alpha: 0.6),
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                child: Row(children: [
+                                  const Icon(Ionicons.location,
+                                      color: Colors.white, size: 12),
+                                  const SizedBox(width: 4),
+                                  Text(formattedDistance,
+                                      style: theme.textTheme.labelSmall
+                                          ?.copyWith(color: Colors.white)),
+                                ]),
                               ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: AppColors.secondaryOrange.withValues(
-                                alpha: 0.15,
-                              ),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Ionicons.heart,
-                              color: AppColors.secondaryOrange,
-                              size: 20,
-                            ),
-                          ),
+                            ],
+                          ]),
                         ],
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  // Description
-                  if (description != null && description.isNotEmpty)
-                    _ExpandableDescription(
-                      text: description,
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color: isDark ? Colors.white70 : Colors.black87,
-                        height: 1.5,
+                    ),
+                  ]),
+                ),
+                if (isCollapsed)
+                  Positioned(
+                    top: MediaQuery.paddingOf(ctx).top,
+                    left: 48,
+                    right: 48,
+                    height: kToolbarHeight,
+                    child: Center(
+                      child: Text(
+                        businessName,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white : AppColors.deepNavy,
+                        ),
                       ),
                     ),
+                  ),
+              ]);
+            }),
+          ),
 
-                  const SizedBox(height: 32),
+          // ── Category + Action Buttons ────────────────────────────
+          SliverToBoxAdapter(
+            child: Container(
+              color: bgColor,
+              padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  if (catName != null && catName.isNotEmpty)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color:
+                            AppColors.primaryYellow.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(catName,
+                          style: theme.textTheme.labelMedium?.copyWith(
+                              color: AppColors.primaryYellow,
+                              fontWeight: FontWeight.bold)),
+                    )
+                  else
+                    const SizedBox.shrink(),
+                  Row(children: [
+                    _ActionBtn(
+                      icon: Ionicons.call_sharp,
+                      color: Colors.blue,
+                      opacity: (phoneNumber != null && phoneNumber.isNotEmpty)
+                          ? 1.0
+                          : 0.45,
+                      onTap: (phoneNumber != null && phoneNumber.isNotEmpty)
+                          ? () async {
+                              final uri = Uri.parse('tel:$phoneNumber');
+                              if (await canLaunchUrl(uri)) launchUrl(uri);
+                            }
+                          : null,
+                    ),
+                    const SizedBox(width: 12),
+                    _ActionBtn(
+                      icon: Ionicons.location_sharp,
+                      color: Colors.green,
+                      onTap: () async {
+                        if (detail?.latitude != null &&
+                            detail?.longitude != null) {
+                          final uri = Uri.parse(
+                              'google.navigation:q=${detail!.latitude},${detail!.longitude}');
+                          if (await canLaunchUrl(uri)) launchUrl(uri);
+                        }
+                      },
+                    ),
+                    const SizedBox(width: 12),
+                    _ActionBtn(
+                        icon: Ionicons.heart,
+                        color: AppColors.secondaryOrange),
+                  ]),
                 ],
               ),
             ),
           ),
 
-          // Popular Menu
-          if (state.offerings.isNotEmpty) ...[
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Popular Menu',
-                      style: theme.textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Text(
-                      'View All',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: AppColors.secondaryOrange,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+          // ── Sticky Tab Bar ───────────────────────────────────────
+          SliverPersistentHeader(
+            pinned: true,
+            delegate: _TabBarDelegate(
+              tabController: _tabController,
+              isDark: isDark,
+              theme: theme,
+              // Show count only after the menu tab has been visited and loaded
+              menuItemCount: (_visitedTabs.contains(1) &&
+                      !state.isLoadingOfferings &&
+                      state.offerings.isNotEmpty)
+                  ? state.offerings.length
+                  : null,
             ),
-            const SliverToBoxAdapter(child: SizedBox(height: 16)),
-            SliverToBoxAdapter(
-              child: SizedBox(
-                height: 160,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  itemCount: state.offerings.length,
-                  itemBuilder: (context, index) {
-                    final item = state.offerings[index];
-                    return Container(
-                      width: 140,
-                      margin: const EdgeInsets.symmetric(horizontal: 8),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: isDark ? AppColors.darkBackground : Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          if (!isDark)
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                        ],
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SmartImage(
-                            imageUrl:
-                                item.imageUrl ?? displayData!.logoUrl ?? '',
-                            width: 60,
-                            height: 60,
-                            isRound: true,
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            item.name,
-                            style: theme.textTheme.bodyLarge?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            textAlign: TextAlign.center,
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            '${item.price} \$',
-                            style: theme.textTheme.bodyMedium?.copyWith(
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
-            const SliverToBoxAdapter(child: SizedBox(height: 32)),
-          ],
-
-          // Testimonials
-          if (state.reviews.isNotEmpty) ...[
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Text(
-                  'Testimonials',
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ),
-            const SliverToBoxAdapter(child: SizedBox(height: 16)),
-            SliverList(
-              delegate: SliverChildBuilderDelegate((context, index) {
-                final review = state.reviews[index];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24.0,
-                    vertical: 8.0,
-                  ),
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: isDark ? AppColors.darkBackground : Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        if (!isDark)
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                      ],
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (review.user?.profileImage != null)
-                          SmartImage(
-                            imageUrl: review.user!.profileImage,
-                            width: 40,
-                            height: 40,
-                            isRound: true,
-                          )
-                        else
-                          const CircleAvatar(
-                            radius: 20,
-                            child: Icon(Icons.person),
-                          ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        review.user?.name ?? 'Anonymous',
-                                        style: theme.textTheme.titleMedium
-                                            ?.copyWith(
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                      ),
-                                      Text(
-                                        review.createdAt ?? '',
-                                        style: theme.textTheme.bodySmall
-                                            ?.copyWith(color: Colors.grey),
-                                      ),
-                                    ],
-                                  ),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 6,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.green.withValues(
-                                        alpha: 0.15,
-                                      ),
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        const Icon(
-                                          Ionicons.star,
-                                          color: Colors.green,
-                                          size: 12,
-                                        ),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          '${review.overallRating}',
-                                          style: theme.textTheme.labelMedium
-                                              ?.copyWith(
-                                                color: Colors.green,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                review.reviewText,
-                                style: theme.textTheme.bodyMedium?.copyWith(
-                                  color: isDark
-                                      ? Colors.white70
-                                      : Colors.black87,
-                                  height: 1.4,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              }, childCount: state.reviews.length),
-            ),
-            const SliverToBoxAdapter(child: SizedBox(height: 32)),
-          ],
+          ),
         ],
+
+        // ── Tab Body (swipeable) ─────────────────────────────────
+        body: TabBarView(
+          controller: _tabController,
+          dragStartBehavior: DragStartBehavior.down,
+          children: [
+            OverviewTab(
+              key: const PageStorageKey<int>(0),
+              description: description,
+              isDark: isDark,
+              theme: theme,
+              isLoading: state.isLoadingDetail,
+            ),
+            MenuTab(
+              key: const PageStorageKey<int>(1),
+              offerings: state.offerings,
+              isLoading: state.isLoadingOfferings,
+              hasVisited: _visitedTabs.contains(1),
+              isDark: isDark,
+              theme: theme,
+              fallbackLogoUrl: displayData?.logoUrl,
+            ),
+            RatingsTab(
+              key: const PageStorageKey<int>(2),
+              reviews: state.reviews,
+              isLoading: state.isLoadingReviews,
+              hasVisited: _visitedTabs.contains(2),
+              isDark: isDark,
+              theme: theme,
+            ),
+          ],
+        ),
       ),
     );
   }
 }
 
-class _ExpandableDescription extends StatefulWidget {
-  final String text;
-  final TextStyle? style;
+// ─────────────────────────────────────────────────────────────────────────────
+// Shared widgets
+// ─────────────────────────────────────────────────────────────────────────────
 
-  const _ExpandableDescription({required this.text, this.style});
+class _ActionBtn extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final VoidCallback? onTap;
+  final double opacity;
 
-  @override
-  State<_ExpandableDescription> createState() => _ExpandableDescriptionState();
-}
-
-class _ExpandableDescriptionState extends State<_ExpandableDescription> {
-  bool _isExpanded = false;
+  const _ActionBtn({
+    required this.icon,
+    required this.color,
+    this.onTap,
+    this.opacity = 1.0,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        AnimatedCrossFade(
-          firstChild: Text(
-            widget.text,
-            style: widget.style,
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-          ),
-          secondChild: Text(widget.text, style: widget.style),
-          crossFadeState: _isExpanded
-              ? CrossFadeState.showSecond
-              : CrossFadeState.showFirst,
-          duration: const Duration(milliseconds: 200),
+    return GestureDetector(
+      onTap: onTap,
+      child: Opacity(
+        opacity: opacity,
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.15), shape: BoxShape.circle),
+          child: Icon(icon, color: color, size: 20),
         ),
-        LayoutBuilder(
-          builder: (context, constraints) {
-            final span = TextSpan(text: widget.text, style: widget.style);
-            final tp = TextPainter(
-              text: span,
-              maxLines: 3,
-              textDirection: TextDirection.ltr,
-            );
-            tp.layout(maxWidth: constraints.maxWidth);
-            if (tp.didExceedMaxLines) {
-              return GestureDetector(
-                onTap: () => setState(() => _isExpanded = !_isExpanded),
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 6.0),
-                  child: Text(
-                    _isExpanded ? 'Show less' : 'Read more',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.secondaryOrange,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              );
-            }
-            return const SizedBox.shrink();
-          },
-        ),
-      ],
+      ),
     );
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Sticky Tab Bar Delegate
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _TabBarDelegate extends SliverPersistentHeaderDelegate {
+  final TabController tabController;
+  final bool isDark;
+  final ThemeData theme;
+  final int? menuItemCount;
+
+  const _TabBarDelegate({
+    required this.tabController,
+    required this.isDark,
+    required this.theme,
+    this.menuItemCount,
+  });
+
+  static const double _h = 64.0;
+
+  @override
+  double get minExtent => _h;
+  @override
+  double get maxExtent => _h;
+
+  @override
+  Widget build(
+      BuildContext context, double shrinkOffset, bool overlapsContent) {
+    return Container(
+      color: isDark ? AppColors.darkSurface : Colors.white,
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 6),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.darkBackground : Colors.grey.shade100,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: TabBar(
+          controller: tabController,
+          indicator: UnderlineTabIndicator(
+            borderRadius: const BorderRadius.all(Radius.circular(4)),
+            borderSide:
+                const BorderSide(color: AppColors.primaryYellow, width: 3),
+            insets: const EdgeInsets.symmetric(horizontal: 22),
+          ),
+          indicatorSize: TabBarIndicatorSize.tab,
+          dividerColor: Colors.transparent,
+          labelColor: AppColors.primaryYellow,
+          unselectedLabelColor: Colors.grey,
+          labelStyle: theme.textTheme.labelMedium
+              ?.copyWith(fontWeight: FontWeight.bold),
+          unselectedLabelStyle: theme.textTheme.labelMedium,
+          tabs: [
+            const Tab(
+              icon: Icon(Ionicons.information_circle_outline, size: 18),
+              text: 'Overview',
+            ),
+            // Menu tab with optional count badge
+            Tab(
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Ionicons.restaurant_outline, size: 18),
+                  const SizedBox(width: 5),
+                  const Text('Menu'),
+                  if (menuItemCount != null) ...[
+                    const SizedBox(width: 5),
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 250),
+                      width: 18,
+                      height: 18,
+                      decoration: const BoxDecoration(
+                        color: AppColors.primaryYellow,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Text(
+                          '$menuItemCount',
+                          style: const TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            height: 1,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const Tab(
+              icon: Icon(Ionicons.star_outline, size: 18),
+              text: 'Ratings',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(_TabBarDelegate old) =>
+      old.isDark != isDark ||
+      old.tabController != tabController ||
+      old.menuItemCount != menuItemCount;
 }
