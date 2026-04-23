@@ -58,7 +58,7 @@ class _RatingsTabState extends State<RatingsTab>
       child: ListView.builder(
         key: const PageStorageKey<String>('ratings_scroll'),
         primary: true,
-        padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
+        padding: const EdgeInsets.fromLTRB(16, 28, 16, 32),
       itemCount: widget.reviews.length,
       itemBuilder: (context, index) => _ReviewCard(
         review: widget.reviews[index],

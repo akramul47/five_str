@@ -217,6 +217,9 @@ class BusinessDetailModel extends BusinessModel {
   final String? businessPhone;
   final String? website;
   final String? address;
+  final String? fullAddress;
+  final String? googleMapsUrl;
+  final Map<String, dynamic>? freeMaps;
   final String? postalCode;
   final String? latitude;
   final String? longitude;
@@ -248,6 +251,9 @@ class BusinessDetailModel extends BusinessModel {
     this.businessPhone,
     this.website,
     this.address,
+    this.fullAddress,
+    this.googleMapsUrl,
+    this.freeMaps,
     this.postalCode,
     this.latitude,
     this.longitude,
@@ -299,6 +305,9 @@ class BusinessDetailModel extends BusinessModel {
       businessPhone: json['business_phone'] as String?,
       website: json['website'] as String?,
       address: json['address'] as String?,
+      fullAddress: json['full_address'] as String?,
+      googleMapsUrl: json['google_maps_url'] as String?,
+      freeMaps: json['free_maps'] as Map<String, dynamic>?,
       postalCode: json['postal_code'] as String?,
       latitude: json['latitude']?.toString(),
       longitude: json['longitude']?.toString(),

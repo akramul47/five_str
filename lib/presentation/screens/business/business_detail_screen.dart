@@ -115,6 +115,19 @@ class _BusinessDetailScreenState extends ConsumerState<BusinessDetailScreen>
             expandedHeight: 300.0,
             pinned: true,
             forceElevated: innerBoxIsScrolled,
+            leading: Padding(
+              padding: const EdgeInsets.only(left: 16, top: 10, bottom: 10),
+              child: GestureDetector(
+                onTap: () => Navigator.of(context).pop(),
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: AppColors.primaryYellow,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Ionicons.chevron_back, color: Colors.black, size: 18),
+                ),
+              ),
+            ),
             iconTheme: const IconThemeData(color: Colors.white),
             backgroundColor: bgColor,
             bottom: PreferredSize(
@@ -330,7 +343,7 @@ class _BusinessDetailScreenState extends ConsumerState<BusinessDetailScreen>
           children: [
             OverviewTab(
               key: const PageStorageKey<int>(0),
-              description: description,
+              detail: detail,
               isDark: isDark,
               theme: theme,
               isLoading: state.isLoadingDetail,
