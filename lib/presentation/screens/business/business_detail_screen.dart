@@ -450,12 +450,11 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
             ),
             // Menu tab with optional count badge
             Tab(
+              icon: const Icon(Ionicons.restaurant_outline, size: 18),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Ionicons.restaurant_outline, size: 18),
-                  const SizedBox(width: 5),
                   const Text('Menu'),
                   if (menuItemCount != null) ...[
                     const SizedBox(width: 5),

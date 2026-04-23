@@ -21,9 +21,15 @@ class OverviewTab extends StatefulWidget {
   State<OverviewTab> createState() => _OverviewTabState();
 }
 
-class _OverviewTabState extends State<OverviewTab> {
+class _OverviewTabState extends State<OverviewTab>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   @override
   Widget build(BuildContext context) {
+    super.build(context);
+
     if (widget.isLoading) return _shimmer(widget.isDark);
 
     final desc = widget.description;
@@ -31,9 +37,13 @@ class _OverviewTabState extends State<OverviewTab> {
       return _empty(widget.isDark, widget.theme);
     }
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
-      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+    return ScrollConfiguration(
+      behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+      child: SingleChildScrollView(
+        key: const PageStorageKey<String>('overview_scroll'),
+        primary: true,
+        padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Text(
           'About',
           style: widget.theme.textTheme.titleMedium
@@ -49,6 +59,7 @@ class _OverviewTabState extends State<OverviewTab> {
           isDark: widget.isDark,
         ),
       ]),
+      ),
     );
   }
 
@@ -57,19 +68,21 @@ class _OverviewTabState extends State<OverviewTab> {
       baseColor: isDark ? Colors.grey[800]! : Colors.grey[300]!,
       highlightColor: isDark ? Colors.grey[700]! : Colors.grey[100]!,
       child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(24, 20, 24, 32),
+        physics: const NeverScrollableScrollPhysics(),
+        padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
         child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: List.generate(
-                5,
-                (i) => Container(
-                      margin: const EdgeInsets.only(bottom: 10),
-                      height: 16,
-                      width: i == 4 ? 180 : double.infinity,
-                      decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8)),
-                    ))),
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: List.generate(
+            5,
+            (i) => Container(
+              margin: const EdgeInsets.only(bottom: 10),
+              height: 16,
+              width: i == 4 ? 180 : double.infinity,
+              decoration: BoxDecoration(
+                  color: Colors.white, borderRadius: BorderRadius.circular(8)),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -78,12 +91,10 @@ class _OverviewTabState extends State<OverviewTab> {
     return Center(
       child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
         Icon(Icons.info_outline,
-            size: 48,
-            color: isDark ? Colors.white24 : Colors.black26),
+            size: 48, color: isDark ? Colors.white24 : Colors.black26),
         const SizedBox(height: 12),
         Text('No description available',
-            style: theme.textTheme.bodyMedium
-                ?.copyWith(color: Colors.grey)),
+            style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey)),
       ]),
     );
   }
@@ -129,7 +140,7 @@ class _ExpandableTextState extends State<_ExpandableText> {
             padding: const EdgeInsets.only(top: 6),
             child: Text(
               _expanded ? 'Show less' : 'Read more',
-              style: TextStyle(
+              style: const TextStyle(
                   color: AppColors.secondaryOrange,
                   fontWeight: FontWeight.bold,
                   fontSize: 14),

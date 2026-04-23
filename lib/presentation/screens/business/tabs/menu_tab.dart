@@ -6,7 +6,7 @@ import '../../../../core/constants/colors.dart';
 import '../../../../data/models/offering_model.dart';
 import '../../../widgets/common/smart_image.dart';
 
-class MenuTab extends StatelessWidget {
+class MenuTab extends StatefulWidget {
   final List<OfferingModel> offerings;
   final bool isLoading;
   final bool hasVisited;
@@ -25,42 +25,66 @@ class MenuTab extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    // Not yet visited → blank (will start loading shortly)
-    if (!hasVisited || isLoading) return _shimmer(isDark);
+  State<MenuTab> createState() => _MenuTabState();
+}
 
-    if (offerings.isEmpty) {
+class _MenuTabState extends State<MenuTab> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+
+    if (!widget.hasVisited || widget.isLoading) {
+      return _shimmer(widget.isDark);
+    }
+
+    if (widget.offerings.isEmpty) {
       return Center(
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
           Icon(Ionicons.restaurant_outline,
-              size: 48, color: isDark ? Colors.white24 : Colors.black26),
+              size: 48,
+              color: widget.isDark ? Colors.white24 : Colors.black26),
           const SizedBox(height: 12),
           Text('No menu items available',
-              style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey)),
+              style: widget.theme.textTheme.bodyMedium
+                  ?.copyWith(color: Colors.grey)),
         ]),
       );
     }
-    return CustomScrollView(slivers: [
-      const SliverToBoxAdapter(child: SizedBox(height: 28)),
 
-      SliverPadding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        sliver: SliverGrid(
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 0.8,
-          ),
-          delegate: SliverChildBuilderDelegate(
-            (context, index) =>
-                _MenuCard(item: offerings[index], isDark: isDark, theme: theme, fallbackLogoUrl: fallbackLogoUrl),
-            childCount: offerings.length,
+    return ScrollConfiguration(
+      behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+      child: CustomScrollView(
+        key: const PageStorageKey<String>('menu_scroll'),
+        primary: true,
+        slivers: [
+        const SliverToBoxAdapter(child: SizedBox(height: 28)),
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          sliver: SliverGrid(
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: 0.8,
+            ),
+            delegate: SliverChildBuilderDelegate(
+              (context, index) => _MenuCard(
+                item: widget.offerings[index],
+                isDark: widget.isDark,
+                theme: widget.theme,
+                fallbackLogoUrl: widget.fallbackLogoUrl,
+              ),
+              childCount: widget.offerings.length,
+            ),
           ),
         ),
-      ),
-      const SliverToBoxAdapter(child: SizedBox(height: 32)),
-    ]);
+        const SliverToBoxAdapter(child: SizedBox(height: 32)),
+      ],
+    ),
+    );
   }
 
   static Widget _shimmer(bool isDark) {
@@ -73,7 +97,7 @@ class MenuTab extends StatelessWidget {
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
         childAspectRatio: 0.8,
-        padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
+        padding: const EdgeInsets.fromLTRB(16, 28, 16, 0),
         children: List.generate(
           6,
           (_) => Container(
@@ -118,7 +142,6 @@ class _MenuCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Image
           Expanded(
             child: ClipRRect(
               borderRadius:
@@ -132,7 +155,6 @@ class _MenuCard extends StatelessWidget {
               ),
             ),
           ),
-          // Info
           Padding(
             padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
             child: Column(
@@ -164,8 +186,8 @@ class _MenuCard extends StatelessWidget {
                 if (item.isPopular) ...[
                   const SizedBox(height: 6),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 8, vertical: 3),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color: Colors.red.shade400,
                       borderRadius: BorderRadius.circular(8),

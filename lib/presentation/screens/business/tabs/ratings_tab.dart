@@ -6,7 +6,7 @@ import '../../../../core/constants/colors.dart';
 import '../../../../data/models/review_model.dart';
 import '../../../widgets/common/smart_image.dart';
 
-class RatingsTab extends StatelessWidget {
+class RatingsTab extends StatefulWidget {
   final List<ReviewModel> reviews;
   final bool isLoading;
   final bool hasVisited;
@@ -23,26 +23,49 @@ class RatingsTab extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    if (!hasVisited || isLoading) return _shimmer(isDark);
+  State<RatingsTab> createState() => _RatingsTabState();
+}
 
-    if (reviews.isEmpty) {
+class _RatingsTabState extends State<RatingsTab>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+
+    if (!widget.hasVisited || widget.isLoading) {
+      return _shimmer(widget.isDark);
+    }
+
+    if (widget.reviews.isEmpty) {
       return Center(
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
           Icon(Ionicons.star_outline,
-              size: 48, color: isDark ? Colors.white24 : Colors.black26),
+              size: 48,
+              color: widget.isDark ? Colors.white24 : Colors.black26),
           const SizedBox(height: 12),
           Text('No reviews yet',
-              style: theme.textTheme.bodyMedium?.copyWith(color: Colors.grey)),
+              style: widget.theme.textTheme.bodyMedium
+                  ?.copyWith(color: Colors.grey)),
         ]),
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
-      itemCount: reviews.length,
-      itemBuilder: (context, index) =>
-          _ReviewCard(review: reviews[index], isDark: isDark, theme: theme),
+    return ScrollConfiguration(
+      behavior: ScrollConfiguration.of(context).copyWith(scrollbars: false),
+      child: ListView.builder(
+        key: const PageStorageKey<String>('ratings_scroll'),
+        primary: true,
+        padding: const EdgeInsets.fromLTRB(24, 28, 24, 32),
+      itemCount: widget.reviews.length,
+      itemBuilder: (context, index) => _ReviewCard(
+        review: widget.reviews[index],
+        isDark: widget.isDark,
+        theme: widget.theme,
+      ),
+    ),
     );
   }
 
@@ -94,7 +117,6 @@ class _ReviewCard extends StatelessWidget {
         ],
       ),
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        // Avatar
         if (review.user?.profileImage != null)
           SmartImage(
               imageUrl: review.user!.profileImage,
@@ -104,7 +126,6 @@ class _ReviewCard extends StatelessWidget {
         else
           const CircleAvatar(radius: 20, child: Icon(Icons.person, size: 20)),
         const SizedBox(width: 14),
-        // Content
         Expanded(
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -121,7 +142,6 @@ class _ReviewCard extends StatelessWidget {
                               ?.copyWith(color: Colors.grey)),
                     ]),
               ),
-              // Rating badge
               Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -129,8 +149,7 @@ class _ReviewCard extends StatelessWidget {
                     color: Colors.green.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12)),
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  const Icon(Ionicons.star,
-                      color: Colors.green, size: 12),
+                  const Icon(Ionicons.star, color: Colors.green, size: 12),
                   const SizedBox(width: 4),
                   Text('${review.overallRating}',
                       style: theme.textTheme.labelMedium?.copyWith(
