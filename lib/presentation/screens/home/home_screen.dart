@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ionicons/ionicons.dart';
@@ -151,7 +152,9 @@ class HomeScreen extends ConsumerWidget {
                 const SizedBox(height: 28),
 
                 // Dynamic Sections
-                if (homeState.data?.dynamicSections.isNotEmpty ?? false)
+                if (homeState.isLoading)
+                  _buildDynamicShimmerRow(theme, isDark)
+                else if (homeState.data?.dynamicSections.isNotEmpty ?? false)
                   ...homeState.data!.dynamicSections.map(
                     (section) => _buildDynamicSection(section, theme, isDark, context),
                   ),
@@ -192,14 +195,17 @@ class HomeScreen extends ConsumerWidget {
         const SizedBox(height: 16),
         if (state.isLoading)
           SizedBox(
-            height: 90,
+            height: 86,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              itemCount: 5,
-              itemBuilder: (_, __) => const Padding(
-                padding: EdgeInsets.only(right: 16),
-                child: SkeletonLoader(width: 64, height: 90, borderRadius: 16),
+              itemCount: 6,
+              itemBuilder: (_, __) => Padding(
+                padding: const EdgeInsets.only(right: 14),
+                child: SizedBox(
+                  width: 64,
+                  child: _ServiceShimmer(),
+                ),
               ),
             ),
           )
@@ -515,6 +521,122 @@ class HomeScreen extends ConsumerWidget {
       ),
     );
   }
+  // ── Shimmer Helpers ───────────────────────────────────────────────────────
+
+  Widget _buildDynamicShimmerRow(ThemeData theme, bool isDark) {
+    final baseColor = isDark ? Colors.grey[800]! : Colors.grey[300]!;
+    final highlightColor = isDark ? Colors.grey[700]! : Colors.grey[100]!;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 28),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Shimmer.fromColors(
+                  baseColor: baseColor,
+                  highlightColor: highlightColor,
+                  child: Container(
+                    width: 130,
+                    height: 14,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                ),
+                Shimmer.fromColors(
+                  baseColor: baseColor,
+                  highlightColor: highlightColor,
+                  child: Container(
+                    width: 50,
+                    height: 12,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            height: 190,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: 3,
+              itemBuilder: (_, __) => Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: Shimmer.fromColors(
+                  baseColor: baseColor,
+                  highlightColor: highlightColor,
+                  child: Container(
+                    width: 150,
+                    height: 190,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 
 }
 
+// ── _ServiceShimmer ───────────────────────────────────────────────────────────
+
+class _ServiceShimmer extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final baseColor = isDark ? Colors.grey[800]! : Colors.grey[300]!;
+    final highlightColor = isDark ? Colors.grey[700]! : Colors.grey[100]!;
+
+    return Shimmer.fromColors(
+      baseColor: baseColor,
+      highlightColor: highlightColor,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            width: 44,
+            height: 10,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(5),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Container(
+            width: 32,
+            height: 8,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}

@@ -239,8 +239,8 @@ class _BusinessDetailScreenState extends ConsumerState<BusinessDetailScreen>
                 if (isCollapsed)
                   Positioned(
                     top: MediaQuery.paddingOf(ctx).top,
-                    left: 48,
-                    right: 48,
+                    left: 72,
+                    right: 72,
                     height: kToolbarHeight,
                     child: Center(
                       child: Text(

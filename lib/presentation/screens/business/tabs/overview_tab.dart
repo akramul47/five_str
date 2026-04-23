@@ -58,13 +58,16 @@ class _OverviewTabState extends State<OverviewTab>
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           // About Description
           if (desc != null && desc.trim().isNotEmpty) ...[
-            _ExpandableText(
-              text: desc,
-              style: widget.theme.textTheme.bodyLarge?.copyWith(
-                color: widget.isDark ? Colors.white70 : Colors.black87,
-                height: 1.55,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              child: _ExpandableText(
+                text: desc,
+                style: widget.theme.textTheme.bodyLarge?.copyWith(
+                  color: widget.isDark ? Colors.white70 : Colors.black87,
+                  height: 1.55,
+                ),
+                isDark: widget.isDark,
               ),
-              isDark: widget.isDark,
             ),
             const SizedBox(height: 32),
           ],
