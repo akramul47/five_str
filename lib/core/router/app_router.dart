@@ -15,6 +15,7 @@ import '../../data/models/business_model.dart';
 import '../../presentation/screens/business/business_detail_screen.dart';
 import '../../presentation/screens/attraction/attraction_detail_screen.dart';
 import '../../presentation/screens/category/category_screen.dart';
+import '../../data/models/category_model.dart';
 import '../../presentation/screens/notification/notifications_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -91,6 +92,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => CategoryScreen(
           id: int.parse(state.pathParameters['id']!),
+          initialCategory: state.extra as CategoryModel?,
         ),
       ),
       GoRoute(
