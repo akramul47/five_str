@@ -145,7 +145,7 @@ class CategoryNotifier extends StateNotifier<CategoryState> {
   }
 
   void loadMore() {
-    if (state.hasMore && !state.isLoadingMore) {
+    if (state.hasMore && !state.isLoadingMore && !state.isLoadingBusinesses) {
       _loadBusinesses(reset: false);
     }
   }

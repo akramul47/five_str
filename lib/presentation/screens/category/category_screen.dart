@@ -37,7 +37,7 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
 
   void _onScroll() {
     if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 300) {
+        _scrollController.position.maxScrollExtent - 400) {
       ref.read(categoryProvider(widget.id).notifier).loadMore();
     }
   }
@@ -112,18 +112,25 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
               SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
+                    // Footer slot: spinner while loading more, nothing at end
                     if (index == state.businesses.length) {
-                      return state.isLoadingMore
-                          ? const Padding(
-                              padding: EdgeInsets.all(16),
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  color: AppColors.primaryYellow,
-                                  strokeWidth: 2,
-                                ),
+                      if (state.isLoadingMore) {
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 24),
+                          child: Center(
+                            child: SizedBox(
+                              width: 28,
+                              height: 28,
+                              child: CircularProgressIndicator(
+                                color: AppColors.primaryYellow,
+                                strokeWidth: 1.5,
                               ),
-                            )
-                          : const SizedBox(height: 100);
+                            ),
+                          ),
+                        );
+                      }
+                      // Last page reached — just a small bottom padding
+                      return const SizedBox(height: 100);
                     }
                     return _BusinessListTile(
                       business: state.businesses[index],
@@ -131,6 +138,8 @@ class _CategoryScreenState extends ConsumerState<CategoryScreen> {
                       isDark: isDark,
                     );
                   },
+                  // Only add the footer slot when loading more OR there is more to load;
+                  // always keep it so the spacer at the bottom is present
                   childCount: state.businesses.length + 1,
                 ),
               ),
