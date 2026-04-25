@@ -65,12 +65,7 @@ class _BusinessDetailScreenState extends ConsumerState<BusinessDetailScreen>
     final detail = state.detail;
     final displayData = detail ?? widget.initialBusiness;
 
-    if (state.isLoading && displayData == null) {
-      return Scaffold(
-        body: Center(
-            child: CircularProgressIndicator(color: AppColors.primaryYellow)),
-      );
-    }
+
     if (state.error != null && displayData == null) {
       return Scaffold(
           appBar: AppBar(),
