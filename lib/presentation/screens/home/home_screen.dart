@@ -62,6 +62,7 @@ class HomeScreen extends ConsumerWidget {
                             style: theme.textTheme.headlineSmall?.copyWith(
                               fontWeight: FontWeight.w600,
                               letterSpacing: -0.5,
+                              fontSize: 22,
                             ),
                           ),
                         ],
