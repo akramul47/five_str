@@ -51,7 +51,7 @@ class HomeScreen extends ConsumerWidget {
                                 'Current Location',
                                 style: theme.textTheme.labelMedium?.copyWith(
                                   color: Colors.grey,
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                             ],
@@ -60,7 +60,7 @@ class HomeScreen extends ConsumerWidget {
                           Text(
                             'Find Your Favorite Places',
                             style: theme.textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.w600,
+                              fontWeight: FontWeight.w700,
                               letterSpacing: -0.5,
                               fontSize: 22,
                             ),
@@ -199,7 +199,7 @@ class HomeScreen extends ConsumerWidget {
             children: [
               Text('Top Services', 
                 style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w700,
                   letterSpacing: -0.3,
                 )),
               GestureDetector(
@@ -278,7 +278,7 @@ class HomeScreen extends ConsumerWidget {
             Text(
               cat.name,
               style: theme.textTheme.labelSmall?.copyWith(
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w700,
                 height: 1.2,
               ),
               textAlign: TextAlign.center,
@@ -329,7 +329,7 @@ class HomeScreen extends ConsumerWidget {
                   Text(
                     'Popular Services Nearby',
                     style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w700,
                       letterSpacing: -0.3,
                     ),
                   ),
@@ -434,7 +434,7 @@ class HomeScreen extends ConsumerWidget {
                         Text(
                           biz.businessName,
                           style: theme.textTheme.bodySmall?.copyWith(
-                            fontWeight: FontWeight.bold,
+                            fontWeight: FontWeight.w800,
                             height: 1.2,
                           ),
                           maxLines: 2,
@@ -463,7 +463,7 @@ class HomeScreen extends ConsumerWidget {
                           ratingStr,
                           style: theme.textTheme.labelSmall?.copyWith(
                             fontSize: 10,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                         if (distanceStr != null) ...[
@@ -473,7 +473,7 @@ class HomeScreen extends ConsumerWidget {
                               distanceStr,
                               style: theme.textTheme.labelSmall?.copyWith(
                                 color: AppColors.secondaryOrange,
-                                fontWeight: FontWeight.w600,
+                                fontWeight: FontWeight.w700,
                                 fontSize: 10,
                               ),
                               maxLines: 1,
@@ -513,7 +513,7 @@ class HomeScreen extends ConsumerWidget {
                 Text(
                   section.sectionName as String,
                   style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
                     letterSpacing: -0.3,
                   ),
                 ),
@@ -758,7 +758,7 @@ class _HomeEmptyState extends StatelessWidget {
             Text(
               'Nothing around here yet',
               style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w800,
                 letterSpacing: -0.5,
                 color: isDark ? Colors.white : AppColors.deepNavy,
               ),
@@ -793,7 +793,7 @@ class _HomeEmptyState extends StatelessWidget {
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                 textStyle: theme.textTheme.labelLarge?.copyWith(
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
             ),
@@ -855,7 +855,7 @@ class _HomeEmptyState extends StatelessWidget {
             Text(
               'Can\'t reach the server',
               style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w800,
                 letterSpacing: -0.5,
                 color: isDark ? Colors.white : AppColors.deepNavy,
               ),
@@ -888,7 +888,7 @@ class _HomeEmptyState extends StatelessWidget {
                 ),
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
                 textStyle: theme.textTheme.labelLarge?.copyWith(
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
             ),

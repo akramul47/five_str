@@ -20,63 +20,63 @@ class AppTheme {
       displayMedium: TextStyle(
         fontFamily: _fontFamily,
         fontSize: 45,
-        fontWeight: FontWeight.w700, // Bold
+        fontWeight: FontWeight.w800, // Extra Bold
         color: textColor,
         height: 1.15,
       ),
       displaySmall: TextStyle(
         fontFamily: _fontFamily,
         fontSize: 36,
-        fontWeight: FontWeight.w500, // Medium
+        fontWeight: FontWeight.w600, // Semi Bold
         color: textColor,
         height: 1.2,
       ),
       headlineLarge: TextStyle(
         fontFamily: _fontFamily,
         fontSize: 32,
-        fontWeight: FontWeight.w700,
+        fontWeight: FontWeight.w800,
         color: textColor,
       ),
       headlineMedium: TextStyle(
         fontFamily: _fontFamily,
         fontSize: 28,
-        fontWeight: FontWeight.w700,
+        fontWeight: FontWeight.w800,
         color: textColor,
       ),
       titleLarge: TextStyle(
         fontFamily: _fontFamily,
         fontSize: 22,
-        fontWeight: FontWeight.w700,
+        fontWeight: FontWeight.w800,
         color: textColor,
       ),
       titleMedium: TextStyle(
         fontFamily: _fontFamily,
         fontSize: 16,
-        fontWeight: FontWeight.w600,
+        fontWeight: FontWeight.w700,
         color: textColor,
       ),
       bodyLarge: TextStyle(
         fontFamily: _fontFamily,
         fontSize: 16,
-        fontWeight: FontWeight.w400,
+        fontWeight: FontWeight.w500, // Medium
         color: textColor,
       ),
       bodyMedium: TextStyle(
         fontFamily: _fontFamily,
         fontSize: 14,
-        fontWeight: FontWeight.w400,
+        fontWeight: FontWeight.w500, // Medium
         color: textColor,
       ),
       labelLarge: TextStyle(
         fontFamily: _fontFamily,
         fontSize: 14,
-        fontWeight: FontWeight.w600,
+        fontWeight: FontWeight.w700,
         color: textColor,
       ),
       labelSmall: TextStyle(
         fontFamily: _fontFamily,
         fontSize: 11,
-        fontWeight: FontWeight.w500,
+        fontWeight: FontWeight.w600,
         color: textColor,
       ),
     );
