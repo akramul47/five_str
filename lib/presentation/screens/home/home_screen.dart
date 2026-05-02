@@ -19,7 +19,9 @@ class HomeScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
-    final hasNoData = !homeState.isLoading && !homeState.isRefreshing &&
+    final hasNoData =
+        !homeState.isLoading &&
+        !homeState.isRefreshing &&
         (homeState.data == null ||
             (homeState.data!.topServices.isEmpty &&
                 homeState.data!.popularNearby.isEmpty &&
@@ -27,7 +29,8 @@ class HomeScreen extends ConsumerWidget {
 
     return Scaffold(
       body: RefreshIndicator(
-        onRefresh: () => ref.read(homeProvider.notifier).loadData(isRefresh: true),
+        onRefresh: () =>
+            ref.read(homeProvider.notifier).loadData(isRefresh: true),
         child: CustomScrollView(
           slivers: [
             // ── Header ──
@@ -45,7 +48,11 @@ class HomeScreen extends ConsumerWidget {
                         children: [
                           Row(
                             children: [
-                              Icon(Ionicons.location, color: AppColors.primaryYellow, size: 14),
+                              Icon(
+                                Ionicons.location,
+                                color: AppColors.primaryYellow,
+                                size: 14,
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 'Current Location',
@@ -60,7 +67,7 @@ class HomeScreen extends ConsumerWidget {
                           Text(
                             'Find Your Favorite Places',
                             style: theme.textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w900,
                               letterSpacing: -0.5,
                               fontSize: 22,
                             ),
@@ -83,7 +90,9 @@ class HomeScreen extends ConsumerWidget {
                         child: IconButton(
                           icon: Icon(
                             Ionicons.notifications_outline,
-                            color: isDark ? AppColors.white : AppColors.deepNavy,
+                            color: isDark
+                                ? AppColors.white
+                                : AppColors.deepNavy,
                           ),
                           onPressed: () => context.push('/notifications'),
                         ),
@@ -107,18 +116,25 @@ class HomeScreen extends ConsumerWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 16),
                           height: 56,
                           decoration: BoxDecoration(
-                            color: isDark ? AppColors.darkSurface : const Color(0xFFFFF9F2),
+                            color: isDark
+                                ? AppColors.darkSurface
+                                : const Color(0xFFFFF9F2),
                             borderRadius: BorderRadius.circular(16),
                           ),
                           child: Row(
                             children: [
-                              const Icon(Ionicons.search, color: AppColors.secondaryOrange),
+                              const Icon(
+                                Ionicons.search,
+                                color: AppColors.secondaryOrange,
+                              ),
                               const SizedBox(width: 12),
                               Expanded(
                                 child: Text(
                                   'What are you looking for?',
                                   style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: isDark ? Colors.white54 : const Color(0xFFD6C0B3),
+                                    color: isDark
+                                        ? Colors.white54
+                                        : const Color(0xFFD6C0B3),
                                   ),
                                 ),
                               ),
@@ -132,11 +148,16 @@ class HomeScreen extends ConsumerWidget {
                       width: 56,
                       height: 56,
                       decoration: BoxDecoration(
-                        color: isDark ? AppColors.darkSurface : const Color(0xFFFFF9F2),
+                        color: isDark
+                            ? AppColors.darkSurface
+                            : const Color(0xFFFFF9F2),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: IconButton(
-                        icon: const Icon(Ionicons.options, color: AppColors.secondaryOrange),
+                        icon: const Icon(
+                          Ionicons.options,
+                          color: AppColors.secondaryOrange,
+                        ),
                         onPressed: () {},
                       ),
                     ),
@@ -151,10 +172,11 @@ class HomeScreen extends ConsumerWidget {
               SliverFillRemaining(
                 hasScrollBody: false,
                 child: _HomeEmptyState(
-                  theme: theme, 
-                  isDark: isDark, 
+                  theme: theme,
+                  isDark: isDark,
                   error: homeState.error,
-                  onRetry: () => ref.read(homeProvider.notifier).loadData(isRefresh: true),
+                  onRetry: () =>
+                      ref.read(homeProvider.notifier).loadData(isRefresh: true),
                 ),
               )
             else
@@ -170,11 +192,15 @@ class HomeScreen extends ConsumerWidget {
                   const SizedBox(height: 28),
 
                   // Dynamic Sections
-                  if (homeState.isLoading || (homeState.isRefreshing && (homeState.data == null || homeState.data!.dynamicSections.isEmpty)))
+                  if (homeState.isLoading ||
+                      (homeState.isRefreshing &&
+                          (homeState.data == null ||
+                              homeState.data!.dynamicSections.isEmpty)))
                     _buildDynamicShimmerRow(theme, isDark)
                   else if (homeState.data?.dynamicSections.isNotEmpty ?? false)
                     ...homeState.data!.dynamicSections.map(
-                      (section) => _buildDynamicSection(section, theme, isDark, context),
+                      (section) =>
+                          _buildDynamicSection(section, theme, isDark, context),
                     ),
 
                   const SizedBox(height: 100),
@@ -188,7 +214,12 @@ class HomeScreen extends ConsumerWidget {
 
   // ── Top Services ──────────────────────────────────────────────────────────
 
-  Widget _buildTopServicesSection(HomeState state, ThemeData theme, bool isDark, BuildContext context) {
+  Widget _buildTopServicesSection(
+    HomeState state,
+    ThemeData theme,
+    bool isDark,
+    BuildContext context,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -197,21 +228,38 @@ class HomeScreen extends ConsumerWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Top Services', 
+              Text(
+                'Top Services',
                 style: theme.textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.3,
-                )),
+                ),
+              ),
               GestureDetector(
                 onTap: () {},
-                child: Text('View All',
-                    style: theme.textTheme.bodyMedium?.copyWith(color: AppColors.secondaryOrange)),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.secondaryOrange.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    'View All',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: AppColors.secondaryOrange,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
               ),
             ],
           ),
         ),
         const SizedBox(height: 16),
-        if (state.isLoading || (state.isRefreshing && (state.data == null || state.data!.topServices.isEmpty)))
+        if (state.isLoading ||
+            (state.isRefreshing &&
+                (state.data == null || state.data!.topServices.isEmpty)))
           SizedBox(
             height: 86,
             child: ListView.builder(
@@ -220,10 +268,7 @@ class HomeScreen extends ConsumerWidget {
               itemCount: 6,
               itemBuilder: (_, __) => Padding(
                 padding: const EdgeInsets.only(right: 14),
-                child: SizedBox(
-                  width: 64,
-                  child: _ServiceShimmer(),
-                ),
+                child: SizedBox(width: 64, child: _ServiceShimmer()),
               ),
             ),
           )
@@ -244,7 +289,12 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildServiceChip(CategoryModel cat, ThemeData theme, bool isDark, BuildContext context) {
+  Widget _buildServiceChip(
+    CategoryModel cat,
+    ThemeData theme,
+    bool isDark,
+    BuildContext context,
+  ) {
     Color bgColor;
     try {
       final hex = cat.colorCode.replaceFirst('#', '');
@@ -309,8 +359,15 @@ class HomeScreen extends ConsumerWidget {
 
   // ── Popular Nearby ────────────────────────────────────────────────────────
 
-  Widget _buildPopularNearbySection(HomeState state, ThemeData theme, bool isDark, BuildContext context) {
-    if (!state.isLoading && !state.isRefreshing && (state.data?.popularNearby.isEmpty ?? true)) {
+  Widget _buildPopularNearbySection(
+    HomeState state,
+    ThemeData theme,
+    bool isDark,
+    BuildContext context,
+  ) {
+    if (!state.isLoading &&
+        !state.isRefreshing &&
+        (state.data?.popularNearby.isEmpty ?? true)) {
       return const SizedBox.shrink();
     }
 
@@ -324,7 +381,11 @@ class HomeScreen extends ConsumerWidget {
             children: [
               Row(
                 children: [
-                  Icon(Ionicons.location, color: AppColors.primaryYellow, size: 18),
+                  Icon(
+                    Ionicons.location,
+                    color: AppColors.primaryYellow,
+                    size: 18,
+                  ),
                   const SizedBox(width: 6),
                   Text(
                     'Popular Services Nearby',
@@ -335,8 +396,24 @@ class HomeScreen extends ConsumerWidget {
                   ),
                 ],
               ),
-              Text('View All',
-                  style: theme.textTheme.bodyMedium?.copyWith(color: AppColors.secondaryOrange)),
+              GestureDetector(
+                onTap: () {},
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.secondaryOrange.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    'View All',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: AppColors.secondaryOrange,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -349,7 +426,9 @@ class HomeScreen extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 14),
-        if (state.isLoading || (state.isRefreshing && (state.data == null || state.data!.popularNearby.isEmpty)))
+        if (state.isLoading ||
+            (state.isRefreshing &&
+                (state.data == null || state.data!.popularNearby.isEmpty)))
           SizedBox(
             height: 190,
             child: ListView.builder(
@@ -358,7 +437,11 @@ class HomeScreen extends ConsumerWidget {
               itemCount: 3,
               itemBuilder: (_, __) => const Padding(
                 padding: EdgeInsets.only(right: 12),
-                child: SkeletonLoader(width: 150, height: 190, borderRadius: 16),
+                child: SkeletonLoader(
+                  width: 150,
+                  height: 190,
+                  borderRadius: 16,
+                ),
               ),
             ),
           )
@@ -379,7 +462,12 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildNearbyCard(dynamic biz, ThemeData theme, bool isDark, BuildContext context) {
+  Widget _buildNearbyCard(
+    dynamic biz,
+    ThemeData theme,
+    bool isDark,
+    BuildContext context,
+  ) {
     // Format rating to 1 decimal
     final ratingStr = () {
       final r = double.tryParse(biz.overallRating.toString()) ?? 0.0;
@@ -412,7 +500,9 @@ class HomeScreen extends ConsumerWidget {
             Hero(
               tag: 'business-image-${biz.id}',
               child: ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(16),
+                ),
                 child: SmartImage(
                   imageUrl: biz.coverUrl ?? biz.logoUrl,
                   width: 150,
@@ -457,7 +547,11 @@ class HomeScreen extends ConsumerWidget {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Icon(Ionicons.star, size: 11, color: AppColors.starYellow),
+                        Icon(
+                          Ionicons.star,
+                          size: 11,
+                          color: AppColors.starYellow,
+                        ),
                         const SizedBox(width: 2),
                         Text(
                           ratingStr,
@@ -493,10 +587,14 @@ class HomeScreen extends ConsumerWidget {
     );
   }
 
-
   // ── Dynamic Sections ──────────────────────────────────────────────────────
 
-  Widget _buildDynamicSection(dynamic section, ThemeData theme, bool isDark, BuildContext context) {
+  Widget _buildDynamicSection(
+    dynamic section,
+    ThemeData theme,
+    bool isDark,
+    BuildContext context,
+  ) {
     final businesses = section.businesses as List;
     if (businesses.isEmpty) return const SizedBox.shrink();
 
@@ -517,8 +615,24 @@ class HomeScreen extends ConsumerWidget {
                     letterSpacing: -0.3,
                   ),
                 ),
-                Text('View All',
-                    style: theme.textTheme.bodyMedium?.copyWith(color: AppColors.secondaryOrange)),
+                GestureDetector(
+                  onTap: () {},
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: AppColors.secondaryOrange.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      'View All',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: AppColors.secondaryOrange,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
@@ -609,7 +723,6 @@ class HomeScreen extends ConsumerWidget {
       ),
     );
   }
-
 }
 
 // ── _ServiceShimmer ───────────────────────────────────────────────────────────
@@ -699,7 +812,9 @@ class _HomeEmptyState extends StatelessWidget {
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
                       colors: [
-                        AppColors.primaryYellow.withValues(alpha: isDark ? 0.20 : 0.14),
+                        AppColors.primaryYellow.withValues(
+                          alpha: isDark ? 0.20 : 0.14,
+                        ),
                         AppColors.primaryYellow.withValues(alpha: 0.0),
                       ],
                     ),
@@ -791,7 +906,10 @@ class _HomeEmptyState extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 14,
+                ),
                 textStyle: theme.textTheme.labelLarge?.copyWith(
                   fontWeight: FontWeight.w800,
                 ),
@@ -886,7 +1004,10 @@ class _HomeEmptyState extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 14,
+                ),
                 textStyle: theme.textTheme.labelLarge?.copyWith(
                   fontWeight: FontWeight.w800,
                 ),
@@ -898,4 +1019,3 @@ class _HomeEmptyState extends StatelessWidget {
     );
   }
 }
-
