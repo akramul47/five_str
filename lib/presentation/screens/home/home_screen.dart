@@ -236,7 +236,7 @@ class HomeScreen extends ConsumerWidget {
                 ),
               ),
               GestureDetector(
-                onTap: () {},
+                onTap: () => context.push('/top-services'),
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(

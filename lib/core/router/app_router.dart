@@ -17,6 +17,7 @@ import '../../presentation/screens/attraction/attraction_detail_screen.dart';
 import '../../presentation/screens/category/category_screen.dart';
 import '../../data/models/category_model.dart';
 import '../../presentation/screens/notification/notifications_screen.dart';
+import '../../presentation/screens/top_services/top_services_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
@@ -99,6 +100,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/notifications',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const NotificationsScreen(),
+      ),
+      GoRoute(
+        path: '/top-services',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const TopServicesScreen(),
       ),
     ],
   );

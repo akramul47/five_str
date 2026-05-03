@@ -90,7 +90,7 @@ class HomeRepository {
     }
   }
 
-  /// Fetch all top service categories.
+  /// Fetch all top service categories (no location).
   Future<List<CategoryModel>> getTopServices() async {
     try {
       final response = await _client.get(ApiConfig.topServices);
@@ -105,6 +105,78 @@ class HomeRepository {
           : ApiException(message: e.message ?? 'Failed to load categories');
     }
   }
+
+  /// Fetch top service categories with location context + full debug logging.
+  Future<List<CategoryModel>> getTopServicesWithLocation({
+    required double latitude,
+    required double longitude,
+    int radius = 10,
+  }) async {
+    try {
+      final response = await _client.get(
+        ApiConfig.topServices,
+        queryParameters: {
+          'latitude': latitude,
+          'longitude': longitude,
+          'radius': radius,
+        },
+      );
+
+      debugPrint('══════════════════════════════════════════════════════════');
+      debugPrint('TOP SERVICES API → ${ApiConfig.topServices}');
+      debugPrint('Params: lat=$latitude, lng=$longitude, radius=$radius');
+      debugPrint('RAW RESPONSE: ${response.data}');
+
+      final body = response.data as Map<String, dynamic>;
+      // The API may wrap in data:{} or return categories directly
+      final inner = body['data'];
+      List<CategoryModel> categories;
+
+      if (inner is List) {
+        // data is a plain list
+        debugPrint('Response shape: data is List (${inner.length} items)');
+        categories = _parseList(inner, CategoryModel.fromJson);
+      } else if (inner is Map<String, dynamic>) {
+        // data is a map — try common keys
+        final rawList = inner['categories'] ??
+            inner['top_services'] ??
+            inner['data'] ??
+            inner;
+        debugPrint('Response shape: data is Map, using key → rawList');
+        categories = _parseList(
+          rawList is List ? rawList : null,
+          CategoryModel.fromJson,
+        );
+      } else {
+        // No data wrapper — try top-level keys
+        final rawList = body['categories'] ??
+            body['top_services'] ??
+            body['data'];
+        debugPrint('Response shape: no data wrapper, top-level keys');
+        categories = _parseList(
+          rawList is List ? rawList : null,
+          CategoryModel.fromJson,
+        );
+      }
+
+      debugPrint('Parsed ${categories.length} categories:');
+      for (final cat in categories) {
+        debugPrint(
+          '  [${cat.id}] ${cat.name} | businesses: ${cat.totalBusinesses} | '
+          'featured: ${cat.isFeatured} | popular: ${cat.isPopular} | '
+          'color: ${cat.colorCode}',
+        );
+      }
+      debugPrint('══════════════════════════════════════════════════════════');
+
+      return categories;
+    } on DioException catch (e) {
+      throw e.error is ApiException
+          ? e.error as ApiException
+          : ApiException(message: e.message ?? 'Failed to load categories');
+    }
+  }
+
 
   /// Fetch popular nearby businesses.
   Future<List<BusinessModel>> getPopularNearby({
