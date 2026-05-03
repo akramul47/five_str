@@ -92,7 +92,10 @@ class CategoryNotifier extends StateNotifier<CategoryState> {
   }
 
   Future<void> _loadBusinesses({bool reset = false}) async {
-    if (state.isLoadingMore && !reset) return;
+    // Guard: don't fire if already fetching a next page
+    if (!reset && (state.isLoadingMore || state.isLoadingBusinesses)) return;
+    // Guard: no more pages to load
+    if (!reset && !state.hasMore) return;
 
     final page = reset ? 1 : state.currentPage + 1;
     final targetId = state.selectedSubcategoryId ?? categoryId;
@@ -109,6 +112,7 @@ class CategoryNotifier extends StateNotifier<CategoryState> {
         categoryId: targetId,
         latitude: location.latitude,
         longitude: location.longitude,
+        radius: 100, // Wide radius for browse/discovery — nearest first via sort
         page: page,
         sort: state.sort,
       );

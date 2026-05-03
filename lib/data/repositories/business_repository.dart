@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:dio/dio.dart';
 
 import '../../core/config/api_config.dart';
@@ -79,9 +80,9 @@ class BusinessRepository {
     required int categoryId,
     required double latitude,
     required double longitude,
-    int radius = 10,
+    int radius = 100,
     int page = 1,
-    int limit = 20,
+    int perPage = 20,
     String sort = 'distance',
   }) async {
     try {
@@ -92,7 +93,7 @@ class BusinessRepository {
           'longitude': longitude,
           'radius': radius,
           'page': page,
-          'limit': limit,
+          'per_page': perPage,   // API uses per_page not limit
           'sort': sort,
         },
       );
@@ -311,6 +312,7 @@ class BusinessRepository {
     T Function(Map<String, dynamic>) fromJson,
   ) {
     final body = response.data as Map<String, dynamic>;
+
     // The data can be directly the paginated object or nested in 'data'
     final paginated = body['data'] is Map<String, dynamic>
         ? body['data'] as Map<String, dynamic>
@@ -320,15 +322,39 @@ class BusinessRepository {
         paginated['businesses'] as List<dynamic>? ??
         [];
 
+    final paginationMeta = paginated['pagination'] as Map<String, dynamic>? ??
+                           paginated['meta'] as Map<String, dynamic>? ??
+                           paginated;
+
+    final currentPage = paginationMeta['current_page'] as int? ?? 1;
+    final lastPage   = paginationMeta['last_page']    as int? ?? 1;
+    final total      = paginationMeta['total']         as int? ?? rawList.length;
+    final perPage    = paginationMeta['per_page']      as int? ?? 20;
+
+    // API provides has_more directly; fall back to page comparison
+    final apiHasMore = paginationMeta['has_more'] as bool?;
+    final hasMore = apiHasMore ?? 
+        ((paginationMeta['next_page_url'] as String?) != null) ||
+        currentPage < lastPage;
+
+    debugPrint('══════════════════════════════════════════════════════');
+    debugPrint('PAGINATION RESPONSE (raw top-level keys): ${body.keys.toList()}');
+    debugPrint('paginated keys: ${paginated.keys.toList()}');
+    debugPrint('page: $currentPage/$lastPage | per_page: $perPage | '
+        'total: $total | items: ${rawList.length} | hasMore: $hasMore');
+    debugPrint('has_more field: $apiHasMore | '
+        'next_page_url: ${paginationMeta['next_page_url']}');
+    debugPrint('══════════════════════════════════════════════════════');
+
     return PaginatedResult<T>(
       items: rawList
           .whereType<Map<String, dynamic>>()
           .map(fromJson)
           .toList(),
-      currentPage: paginated['current_page'] as int? ?? 1,
-      lastPage: paginated['last_page'] as int? ?? 1,
-      total: paginated['total'] as int? ?? rawList.length,
-      hasMore: (paginated['next_page_url'] as String?) != null,
+      currentPage: currentPage,
+      lastPage:    lastPage,
+      total:       total,
+      hasMore:     hasMore,
     );
   }
 
