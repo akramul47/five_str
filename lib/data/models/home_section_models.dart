@@ -46,7 +46,9 @@ class DynamicSection {
     return DynamicSection(
       sectionName: json['section_name'] as String? ?? '',
       sectionSlug: json['section_slug'] as String? ?? '',
-      count: json['count'] as int? ?? 0,
+      count: json['count'] != null 
+          ? int.tryParse(json['count'].toString()) ?? 0
+          : 0,
       businesses: (json['businesses'] as List<dynamic>?)
               ?.map(
                   (e) => BusinessModel.fromJson(e as Map<String, dynamic>))

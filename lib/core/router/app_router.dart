@@ -18,6 +18,8 @@ import '../../presentation/screens/category/category_screen.dart';
 import '../../data/models/category_model.dart';
 import '../../presentation/screens/notification/notifications_screen.dart';
 import '../../presentation/screens/top_services/top_services_screen.dart';
+import '../../presentation/screens/business_list/business_list_screen.dart';
+import '../../presentation/providers/business_list_provider.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
@@ -105,6 +107,28 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/top-services',
         parentNavigatorKey: _rootNavigatorKey,
         builder: (context, state) => const TopServicesScreen(),
+      ),
+      GoRoute(
+        path: '/business-list',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>? ?? {};
+          final slug = extra['slug'] as String? ?? 'popular-nearby';
+          final title = extra['title'] as String? ?? 'Businesses';
+          final subtitle = extra['subtitle'] as String?;
+          final type = switch (slug) {
+            'popular-nearby' => BusinessListType.popularNearby,
+            'trending'       => BusinessListType.trending,
+            'top-rated'      => BusinessListType.topRated,
+            'open-now'       => BusinessListType.openNow,
+            _                => BusinessListType.dynamic(slug),
+          };
+          return BusinessListScreen(
+            type: type,
+            title: title,
+            subtitle: subtitle,
+          );
+        },
       ),
     ],
   );

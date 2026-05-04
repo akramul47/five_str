@@ -132,6 +132,16 @@ class BusinessModel {
 
     String? safeStr(dynamic v) => v?.toString();
 
+    String? parseDistance(dynamic d) {
+      if (d == null) return null;
+      if (d is Map) {
+        final val = d['value'] ?? d['distance'];
+        final unit = d['unit'] ?? 'km';
+        if (val != null) return '$val $unit';
+      }
+      return safeStr(d);
+    }
+
     // Handle logo_image which can be string or object
     BusinessImages? images;
     if (json['images'] != null) {
@@ -158,7 +168,7 @@ class BusinessModel {
       totalReviews: safeInt(json['total_reviews']),
       isVerified: json['is_verified'] as bool? ?? false,
       isFeatured: json['is_featured'] as bool? ?? false,
-      distanceKm: safeStr(json['distance_km']) ?? safeStr(json['distance']),
+      distanceKm: parseDistance(json['distance_km']) ?? parseDistance(json['distance']),
       categoryName: safeStr(json['category_name']),
       subcategoryName: safeStr(json['subcategory_name']),
       images: images,

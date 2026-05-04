@@ -650,7 +650,8 @@ class _BusinessListTile extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        if (business.formattedDistance != null)
+                        if (business.formattedDistance != null) ...[
+                          const SizedBox(width: 4),
                           Text(
                             business.formattedDistance!,
                             style: theme.textTheme.labelSmall?.copyWith(
@@ -659,6 +660,7 @@ class _BusinessListTile extends StatelessWidget {
                               fontSize: 11,
                             ),
                           ),
+                        ]
                       ],
                     ),
                   ],

@@ -10,6 +10,7 @@ import '../models/category_model.dart';
 import '../models/offer_model.dart';
 import '../models/attraction_model.dart';
 import '../models/home_section_models.dart';
+import 'business_repository.dart';
 
 /// Response object for the /home endpoint.
 class HomeResponse {
@@ -262,6 +263,70 @@ class HomeRepository {
           : ApiException(message: e.message ?? 'Failed to load brands');
     }
   }
+
+  /// Fetch a paginated dynamic section (e.g. trending_now, top_rated).
+  Future<PaginatedResult<BusinessModel>> getDynamicSectionPaginated({
+    required String slug,
+    required double latitude,
+    required double longitude,
+    int page = 1,
+    int perPage = 20,
+    int radius = 100,
+  }) async {
+    try {
+      final response = await _client.get(
+        ApiConfig.dynamicSections(slug),
+        queryParameters: {
+          'latitude': latitude,
+          'longitude': longitude,
+          'radius': radius,
+          'page': page,
+          'per_page': perPage,
+        },
+      );
+      final body = response.data as Map<String, dynamic>;
+      final data = body['data'] is Map<String, dynamic>
+          ? body['data'] as Map<String, dynamic>
+          : body;
+
+      // Dynamic sections may return businesses in a flat list or paginated object
+      final paginationMeta = data['pagination'] as Map<String, dynamic>? ??
+                             data['meta']       as Map<String, dynamic>? ??
+                             data;
+
+      final rawList = data['businesses'] as List<dynamic>? ??
+                      data['data']       as List<dynamic>? ??
+                      [];
+
+      final currentPage = int.tryParse(paginationMeta['current_page']?.toString() ?? '') ?? 1;
+      final lastPage    = int.tryParse(paginationMeta['last_page']?.toString() ?? '') ?? 1;
+      final total       = int.tryParse(paginationMeta['total']?.toString() ?? '') ?? rawList.length;
+      final apiHasMore  = paginationMeta['has_more']     as bool?;
+      final hasMore     = apiHasMore ??
+          ((paginationMeta['next_page_url'] as String?) != null) ||
+          currentPage < lastPage;
+
+      debugPrint('DynamicSection [$slug] page $currentPage/$lastPage '
+          '| items: ${rawList.length} | hasMore: $hasMore');
+
+      return PaginatedResult<BusinessModel>(
+        items: rawList
+            .whereType<Map<String, dynamic>>()
+            .map(BusinessModel.fromJson)
+            .toList(),
+        currentPage: currentPage,
+        lastPage: lastPage,
+        total: total,
+        hasMore: hasMore,
+      );
+    } on DioException catch (e) {
+      throw e.error is ApiException
+          ? e.error as ApiException
+          : ApiException(
+              message: e.message ?? 'Failed to load dynamic section');
+    }
+  }
+
 
   // ── Helpers ──
 

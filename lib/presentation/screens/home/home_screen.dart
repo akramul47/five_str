@@ -397,7 +397,11 @@ class HomeScreen extends ConsumerWidget {
                 ],
               ),
               GestureDetector(
-                onTap: () {},
+                onTap: () => context.push('/business-list', extra: {
+                  'slug': 'popular-nearby',
+                  'title': 'Popular Services Nearby',
+                  'subtitle': 'Highly rated businesses in your area',
+                }),
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
@@ -562,17 +566,15 @@ class HomeScreen extends ConsumerWidget {
                         ),
                         if (distanceStr != null) ...[
                           const Spacer(),
-                          Flexible(
-                            child: Text(
-                              distanceStr,
-                              style: theme.textTheme.labelSmall?.copyWith(
-                                color: AppColors.secondaryOrange,
-                                fontWeight: FontWeight.w700,
-                                fontSize: 10,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
+                          Text(
+                            distanceStr,
+                            style: theme.textTheme.labelSmall?.copyWith(
+                              color: AppColors.secondaryOrange,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 10,
                             ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ],
@@ -616,7 +618,11 @@ class HomeScreen extends ConsumerWidget {
                   ),
                 ),
                 GestureDetector(
-                  onTap: () {},
+                  onTap: () => context.push('/business-list', extra: {
+                    'slug': section.sectionSlug,
+                    'title': section.sectionName,
+                    'subtitle': '${section.count} businesses',
+                  }),
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(

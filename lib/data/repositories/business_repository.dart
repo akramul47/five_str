@@ -326,10 +326,10 @@ class BusinessRepository {
                            paginated['meta'] as Map<String, dynamic>? ??
                            paginated;
 
-    final currentPage = paginationMeta['current_page'] as int? ?? 1;
-    final lastPage   = paginationMeta['last_page']    as int? ?? 1;
-    final total      = paginationMeta['total']         as int? ?? rawList.length;
-    final perPage    = paginationMeta['per_page']      as int? ?? 20;
+    final currentPage = int.tryParse(paginationMeta['current_page']?.toString() ?? '') ?? 1;
+    final lastPage    = int.tryParse(paginationMeta['last_page']?.toString() ?? '') ?? 1;
+    final total       = int.tryParse(paginationMeta['total']?.toString() ?? '') ?? rawList.length;
+    final perPage     = int.tryParse(paginationMeta['per_page']?.toString() ?? '') ?? 20;
 
     // API provides has_more directly; fall back to page comparison
     final apiHasMore = paginationMeta['has_more'] as bool?;
