@@ -582,8 +582,9 @@ class _BusinessListTile extends StatelessWidget {
             // Info
             Expanded(
               child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                padding: const EdgeInsets.only(
+                  left: 14, top: 12, bottom: 12, right: 16,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -666,11 +667,6 @@ class _BusinessListTile extends StatelessWidget {
                   ],
                 ),
               ),
-            ),
-            const Padding(
-              padding: EdgeInsets.only(right: 12),
-              child: Icon(Ionicons.chevron_forward,
-                  size: 16, color: Colors.grey),
             ),
           ],
         ),
