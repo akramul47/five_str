@@ -328,6 +328,7 @@ class _BusinessDetailScreenState extends ConsumerState<BusinessDetailScreen>
               isDark: isDark,
               theme: theme,
               isFoodCategory: isFoodCategory,
+              isOverviewLoaded: !state.isLoadingDetail && state.detail != null,
               // Show count only after the menu tab has been visited and loaded
               menuItemCount: (_visitedTabs.contains(1) &&
                       !state.isLoadingOfferings &&
@@ -425,12 +426,14 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
   final int? menuItemCount;
   final int? reviewsCount;
   final bool isFoodCategory;
+  final bool isOverviewLoaded;
 
   const _TabBarDelegate({
     required this.tabController,
     required this.isDark,
     required this.theme,
     required this.isFoodCategory,
+    required this.isOverviewLoaded,
     this.menuItemCount,
     this.reviewsCount,
   });
@@ -469,8 +472,13 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
               ?.copyWith(fontWeight: FontWeight.bold),
           unselectedLabelStyle: theme.textTheme.labelMedium,
           tabs: [
-            const Tab(
-              icon: Icon(Ionicons.information_circle_outline, size: 18),
+            Tab(
+              icon: Icon(
+                isOverviewLoaded
+                    ? Ionicons.information_circle
+                    : Ionicons.information_circle_outline,
+                size: 18,
+              ),
               text: 'Overview',
             ),
             // Menu / Services tab with optional count badge
@@ -559,5 +567,6 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
       old.isDark != isDark ||
       old.tabController != tabController ||
       old.menuItemCount != menuItemCount ||
-      old.reviewsCount != reviewsCount;
+      old.reviewsCount != reviewsCount ||
+      old.isOverviewLoaded != isOverviewLoaded;
 }
