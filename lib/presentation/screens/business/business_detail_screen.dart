@@ -90,8 +90,6 @@ class _BusinessDetailScreenState extends ConsumerState<BusinessDetailScreen>
         detail?.businessName ?? widget.initialBusiness?.businessName ?? '';
     final ratingValue =
         detail?.ratingValue ?? widget.initialBusiness?.ratingValue ?? 0.0;
-    final description =
-        detail?.description ?? widget.initialBusiness?.description;
     final formattedDistance =
         detail?.formattedDistance ?? widget.initialBusiness?.formattedDistance;
     final phoneNumber = detail?.businessPhone;
@@ -303,10 +301,11 @@ class _BusinessDetailScreenState extends ConsumerState<BusinessDetailScreen>
                       icon: Ionicons.location_sharp,
                       color: Colors.green,
                       onTap: () async {
-                        if (detail?.latitude != null &&
-                            detail?.longitude != null) {
+                        if (detail != null &&
+                            detail.latitude != null &&
+                            detail.longitude != null) {
                           final uri = Uri.parse(
-                              'google.navigation:q=${detail!.latitude},${detail!.longitude}');
+                              'google.navigation:q=${detail.latitude},${detail.longitude}');
                           if (await canLaunchUrl(uri)) launchUrl(uri);
                         }
                       },
