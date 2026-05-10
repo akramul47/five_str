@@ -13,7 +13,8 @@ class MenuTab extends StatefulWidget {
   final bool isDark;
   final ThemeData theme;
   final String? fallbackLogoUrl;
-  final bool isFoodCategory;
+  final String tabName;
+  final IconData tabIcon;
 
   const MenuTab({
     super.key,
@@ -23,7 +24,8 @@ class MenuTab extends StatefulWidget {
     required this.isDark,
     required this.theme,
     this.fallbackLogoUrl,
-    required this.isFoodCategory,
+    required this.tabName,
+    required this.tabIcon,
   });
 
   @override
@@ -43,11 +45,10 @@ class _MenuTabState extends State<MenuTab> with AutomaticKeepAliveClientMixin {
     }
 
     if (widget.offerings.isEmpty) {
-      final icon = widget.isFoodCategory ? Ionicons.restaurant_outline : Ionicons.grid_outline;
-      final label = widget.isFoodCategory ? 'No menu items available' : 'No services available';
+      final label = 'No ${widget.tabName.toLowerCase()} available';
       return Center(
         child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-          Icon(icon,
+          Icon(widget.tabIcon,
               size: 48,
               color: widget.isDark ? Colors.white24 : Colors.black26),
           const SizedBox(height: 12),

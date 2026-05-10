@@ -98,11 +98,24 @@ class _BusinessDetailScreenState extends ConsumerState<BusinessDetailScreen>
     final totalReviews = displayData?.totalReviews;
 
     final lowerCat = catName?.toLowerCase() ?? '';
-    final isFoodCategory = lowerCat.contains('restaurant') ||
-                           lowerCat.contains('street food') ||
-                           lowerCat.contains('bakery') ||
-                           lowerCat.contains('cafe') ||
-                           lowerCat.contains('food');
+    
+    String offeringsTabName = 'Offerings';
+    IconData offeringsTabIcon = Ionicons.grid_outline;
+    IconData offeringsTabIconFilled = Ionicons.grid;
+
+    if (lowerCat.contains('restaurant') || lowerCat.contains('food') || lowerCat.contains('cafe') || lowerCat.contains('coffee') || lowerCat.contains('street food') || lowerCat.contains('bakery')) {
+      offeringsTabName = 'Menu';
+      offeringsTabIcon = Ionicons.restaurant_outline;
+      offeringsTabIconFilled = Ionicons.restaurant;
+    } else if (lowerCat.contains('clothing') || lowerCat.contains('fashion') || lowerCat.contains('apparel') || lowerCat.contains('store') || lowerCat.contains('shop')) {
+      offeringsTabName = 'Products';
+      offeringsTabIcon = Ionicons.cube_outline;
+      offeringsTabIconFilled = Ionicons.cube;
+    } else if (lowerCat.contains('service') || lowerCat.contains('repair') || lowerCat.contains('salon') || lowerCat.contains('spa')) {
+      offeringsTabName = 'Services';
+      offeringsTabIcon = Ionicons.briefcase_outline;
+      offeringsTabIconFilled = Ionicons.briefcase;
+    }
 
     final bgColor = isDark ? AppColors.darkSurface : Colors.white;
 
@@ -327,7 +340,9 @@ class _BusinessDetailScreenState extends ConsumerState<BusinessDetailScreen>
               tabController: _tabController,
               isDark: isDark,
               theme: theme,
-              isFoodCategory: isFoodCategory,
+              offeringsTabName: offeringsTabName,
+              offeringsTabIcon: offeringsTabIcon,
+              offeringsTabIconFilled: offeringsTabIconFilled,
               isOverviewLoaded: !state.isLoadingDetail && state.detail != null,
               // Show count only after the menu tab has been visited and loaded
               menuItemCount: (_visitedTabs.contains(1) &&
@@ -364,7 +379,8 @@ class _BusinessDetailScreenState extends ConsumerState<BusinessDetailScreen>
               isDark: isDark,
               theme: theme,
               fallbackLogoUrl: displayData?.logoUrl,
-              isFoodCategory: isFoodCategory,
+              tabName: offeringsTabName,
+              tabIcon: offeringsTabIcon,
             ),
             RatingsTab(
               key: const PageStorageKey<int>(2),
@@ -425,14 +441,18 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
   final ThemeData theme;
   final int? menuItemCount;
   final int? reviewsCount;
-  final bool isFoodCategory;
+  final String offeringsTabName;
+  final IconData offeringsTabIcon;
+  final IconData offeringsTabIconFilled;
   final bool isOverviewLoaded;
 
   const _TabBarDelegate({
     required this.tabController,
     required this.isDark,
     required this.theme,
-    required this.isFoodCategory,
+    required this.offeringsTabName,
+    required this.offeringsTabIcon,
+    required this.offeringsTabIconFilled,
     required this.isOverviewLoaded,
     this.menuItemCount,
     this.reviewsCount,
@@ -484,16 +504,14 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
             // Menu / Services tab with optional count badge
             Tab(
               icon: Icon(
-                isFoodCategory 
-                    ? (menuItemCount != null ? Ionicons.restaurant : Ionicons.restaurant_outline)
-                    : (menuItemCount != null ? Ionicons.grid : Ionicons.grid_outline),
+                menuItemCount != null ? offeringsTabIconFilled : offeringsTabIcon,
                 size: 18,
               ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text(isFoodCategory ? 'Menu' : 'Services'),
+                  Text(offeringsTabName),
                   if (menuItemCount != null) ...[
                     const SizedBox(width: 5),
                     AnimatedContainer(
