@@ -99,6 +99,13 @@ class _BusinessDetailScreenState extends ConsumerState<BusinessDetailScreen>
     final priceRange = displayData?.priceRange ?? 0;
     final totalReviews = displayData?.totalReviews;
 
+    final lowerCat = catName?.toLowerCase() ?? '';
+    final isFoodCategory = lowerCat.contains('restaurant') ||
+                           lowerCat.contains('street food') ||
+                           lowerCat.contains('bakery') ||
+                           lowerCat.contains('cafe') ||
+                           lowerCat.contains('food');
+
     final bgColor = isDark ? AppColors.darkSurface : Colors.white;
 
     return Scaffold(
@@ -321,6 +328,7 @@ class _BusinessDetailScreenState extends ConsumerState<BusinessDetailScreen>
               tabController: _tabController,
               isDark: isDark,
               theme: theme,
+              isFoodCategory: isFoodCategory,
               // Show count only after the menu tab has been visited and loaded
               menuItemCount: (_visitedTabs.contains(1) &&
                       !state.isLoadingOfferings &&
@@ -351,6 +359,7 @@ class _BusinessDetailScreenState extends ConsumerState<BusinessDetailScreen>
               isDark: isDark,
               theme: theme,
               fallbackLogoUrl: displayData?.logoUrl,
+              isFoodCategory: isFoodCategory,
             ),
             RatingsTab(
               key: const PageStorageKey<int>(2),
@@ -410,11 +419,13 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
   final bool isDark;
   final ThemeData theme;
   final int? menuItemCount;
+  final bool isFoodCategory;
 
   const _TabBarDelegate({
     required this.tabController,
     required this.isDark,
     required this.theme,
+    required this.isFoodCategory,
     this.menuItemCount,
   });
 
@@ -456,14 +467,17 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
               icon: Icon(Ionicons.information_circle_outline, size: 18),
               text: 'Overview',
             ),
-            // Menu tab with optional count badge
+            // Menu / Services tab with optional count badge
             Tab(
-              icon: const Icon(Ionicons.restaurant_outline, size: 18),
+              icon: Icon(
+                isFoodCategory ? Ionicons.restaurant_outline : Ionicons.grid_outline,
+                size: 18,
+              ),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Text('Menu'),
+                  Text(isFoodCategory ? 'Menu' : 'Services'),
                   if (menuItemCount != null) ...[
                     const SizedBox(width: 5),
                     AnimatedContainer(
