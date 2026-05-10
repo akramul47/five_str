@@ -334,6 +334,11 @@ class _BusinessDetailScreenState extends ConsumerState<BusinessDetailScreen>
                       state.offerings.isNotEmpty)
                   ? state.offerings.length
                   : null,
+              reviewsCount: (_visitedTabs.contains(2) &&
+                      !state.isLoadingReviews &&
+                      state.reviews.isNotEmpty)
+                  ? state.reviews.length
+                  : null,
             ),
           ),
         ],
@@ -418,6 +423,7 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
   final bool isDark;
   final ThemeData theme;
   final int? menuItemCount;
+  final int? reviewsCount;
   final bool isFoodCategory;
 
   const _TabBarDelegate({
@@ -426,6 +432,7 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
     required this.theme,
     required this.isFoodCategory,
     this.menuItemCount,
+    this.reviewsCount,
   });
 
   static const double _h = 64.0;
@@ -469,7 +476,9 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
             // Menu / Services tab with optional count badge
             Tab(
               icon: Icon(
-                isFoodCategory ? Ionicons.restaurant_outline : Ionicons.grid_outline,
+                isFoodCategory 
+                    ? (menuItemCount != null ? Ionicons.restaurant : Ionicons.restaurant_outline)
+                    : (menuItemCount != null ? Ionicons.grid : Ionicons.grid_outline),
                 size: 18,
               ),
               child: Row(
@@ -503,9 +512,41 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
                 ],
               ),
             ),
-            const Tab(
-              icon: Icon(Ionicons.star_outline, size: 18),
-              text: 'Ratings',
+            Tab(
+              icon: Icon(
+                reviewsCount != null ? Ionicons.star : Ionicons.star_outline,
+                size: 18,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('Ratings'),
+                  if (reviewsCount != null) ...[
+                    const SizedBox(width: 5),
+                    AnimatedContainer(
+                      duration: const Duration(milliseconds: 250),
+                      width: 18,
+                      height: 18,
+                      decoration: const BoxDecoration(
+                        color: AppColors.primaryYellow,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Text(
+                          '$reviewsCount',
+                          style: const TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            height: 1,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ),
           ],
         ),
@@ -517,5 +558,6 @@ class _TabBarDelegate extends SliverPersistentHeaderDelegate {
   bool shouldRebuild(_TabBarDelegate old) =>
       old.isDark != isDark ||
       old.tabController != tabController ||
-      old.menuItemCount != menuItemCount;
+      old.menuItemCount != menuItemCount ||
+      old.reviewsCount != reviewsCount;
 }
