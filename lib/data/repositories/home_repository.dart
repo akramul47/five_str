@@ -111,7 +111,8 @@ class HomeRepository {
   Future<List<CategoryModel>> getTopServicesWithLocation({
     required double latitude,
     required double longitude,
-    int radius = 10,
+    int radius = 15,
+    int limit = 50,
   }) async {
     try {
       final response = await _client.get(
@@ -120,6 +121,7 @@ class HomeRepository {
           'latitude': latitude,
           'longitude': longitude,
           'radius': radius,
+          'limit': limit,
         },
       );
 
