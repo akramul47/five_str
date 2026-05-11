@@ -5,6 +5,7 @@ import 'package:ionicons/ionicons.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../data/models/offering_model.dart';
 import '../../../widgets/common/smart_image.dart';
+import '../../../widgets/common/star_rating.dart';
 
 class MenuTab extends StatefulWidget {
   final List<OfferingModel> offerings;
@@ -181,12 +182,12 @@ class _MenuCard extends StatelessWidget {
                         fontWeight: FontWeight.bold),
                   ),
                   const Spacer(),
-                  const Icon(Ionicons.star,
-                      size: 12, color: AppColors.primaryYellow),
-                  const SizedBox(width: 2),
-                  Text(item.averageRating,
-                      style: theme.textTheme.labelSmall
-                          ?.copyWith(color: Colors.grey)),
+                  StarRating(
+                    rating: item.averageRating,
+                    iconSize: 12,
+                    textStyle: theme.textTheme.labelSmall
+                        ?.copyWith(color: Colors.grey),
+                  ),
                 ]),
                 if (item.isPopular) ...[
                   const SizedBox(height: 6),

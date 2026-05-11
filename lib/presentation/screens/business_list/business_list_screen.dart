@@ -8,6 +8,7 @@ import '../../../core/constants/colors.dart';
 import '../../../data/models/business_model.dart';
 import '../../providers/business_list_provider.dart';
 import '../../widgets/common/smart_image.dart';
+import '../../widgets/common/star_rating.dart';
 
 /// Generic "View All" screen that lists businesses from any home section.
 /// Accepts [type] (which API to call), [title], and optional [subtitle].
@@ -444,12 +445,11 @@ class _BusinessTile extends StatelessWidget {
                     const SizedBox(height: 6),
                     Row(
                       children: [
-                        const Icon(Ionicons.star,
-                            size: 12, color: AppColors.starYellow),
-                        const SizedBox(width: 3),
-                        Text(
-                          ratingStr,
-                          style: theme.textTheme.labelSmall?.copyWith(
+                        StarRating(
+                          rating: ratingStr,
+                          iconSize: 12,
+                          spacing: 3,
+                          textStyle: theme.textTheme.labelSmall?.copyWith(
                             fontWeight: FontWeight.w700,
                             fontSize: 11,
                           ),

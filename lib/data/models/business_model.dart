@@ -313,7 +313,7 @@ class BusinessDetailModel extends BusinessModel {
       businessModel: base.businessModel,
       businessEmail: json['business_email'] as String?,
       businessPhone: json['business_phone'] as String?,
-      website: json['website'] as String?,
+      website: (json['website'] as String?) ?? (json['website_url'] as String?),
       address: json['address'] as String?,
       fullAddress: json['full_address'] as String?,
       googleMapsUrl: json['google_maps_url'] as String?,

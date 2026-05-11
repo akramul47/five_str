@@ -5,6 +5,7 @@ import 'package:ionicons/ionicons.dart';
 import '../../../../core/constants/colors.dart';
 import '../../../../data/models/review_model.dart';
 import '../../../widgets/common/smart_image.dart';
+import '../../../widgets/common/star_rating.dart';
 
 class RatingsTab extends StatefulWidget {
   final List<ReviewModel> reviews;
@@ -149,11 +150,15 @@ class _ReviewCard extends StatelessWidget {
                     color: Colors.green.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(12)),
                 child: Row(mainAxisSize: MainAxisSize.min, children: [
-                  const Icon(Ionicons.star, color: Colors.green, size: 12),
-                  const SizedBox(width: 4),
-                  Text('${review.overallRating}',
-                      style: theme.textTheme.labelMedium?.copyWith(
-                          color: Colors.green, fontWeight: FontWeight.bold)),
+                  StarRating(
+                    rating: '${review.overallRating}',
+                    iconSize: 12,
+                    spacing: 4,
+                    verticalOffset: 2.0,
+                    iconColor: Colors.green,
+                    textStyle: theme.textTheme.labelMedium?.copyWith(
+                        color: Colors.green, fontWeight: FontWeight.bold),
+                  ),
                 ]),
               ),
             ]),

@@ -78,6 +78,15 @@ class _OverviewTabState extends State<OverviewTab>
             isDark: widget.isDark,
             theme: widget.theme,
           ),
+
+          // Opening Hours Section
+          if (widget.detail?.openingHours != null && widget.detail!.openingHours!.isNotEmpty)
+            _OpeningHoursCard(
+              openingHours: widget.detail!.openingHours,
+              isDark: widget.isDark,
+              theme: widget.theme,
+            ),
+
           
           if (hasFollowUs) ...[
             const SizedBox(height: 32),
@@ -86,9 +95,9 @@ class _OverviewTabState extends State<OverviewTab>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Follow Us Section
+                  // Contact Us Section
                   Text(
-                    'Follow Us',
+                    'Contact Us',
                     style: widget.theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w600, letterSpacing: -0.3),
                   ),
@@ -443,7 +452,7 @@ class _ContactLinks extends StatelessWidget {
       children: [
         if (detail?.businessPhone != null && detail!.businessPhone!.isNotEmpty)
           _ContactBtn(
-            icon: Ionicons.call,
+            icon: Ionicons.call_outline,
             isDark: isDark,
             onTap: () async {
               final uri = Uri.parse('tel:${detail!.businessPhone}');
@@ -500,6 +509,89 @@ class _ContactBtn extends StatelessWidget {
           shape: BoxShape.circle,
         ),
         child: Icon(icon, color: isDark ? Colors.white : Colors.black87, size: 20),
+      ),
+    );
+  }
+}
+
+// ── Opening Hours ────────────────────────────────────────────────────────────
+
+class _OpeningHoursCard extends StatelessWidget {
+  final Map<String, dynamic>? openingHours;
+  final bool isDark;
+  final ThemeData theme;
+
+  const _OpeningHoursCard({
+    required this.openingHours,
+    required this.isDark,
+    required this.theme,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (openingHours == null || openingHours!.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final cardBg = isDark ? const Color(0xFF232A3B) : Colors.grey.shade50;
+    final days = [
+      'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
+    ];
+
+    return Container(
+      margin: const EdgeInsets.only(top: 24),
+      decoration: BoxDecoration(
+        color: cardBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? Colors.white10 : Colors.black12,
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'OPENING HOURS',
+              style: theme.textTheme.labelSmall?.copyWith(
+                color: Colors.grey,
+                letterSpacing: 1.2,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 16),
+            ...days.map((day) {
+              final hours = openingHours![day.toLowerCase()] ?? 'Closed';
+              final isClosed = hours.toString().toLowerCase() == 'closed';
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      day,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: isDark ? Colors.white70 : Colors.black87,
+                      ),
+                    ),
+                    Text(
+                      hours.toString(),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: isClosed 
+                            ? Colors.redAccent 
+                            : (isDark ? Colors.white : Colors.black87),
+                        fontWeight: isClosed ? FontWeight.w600 : FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+            // Add a small bottom padding adjustment since the last item has bottom padding
+            const SizedBox(height: 4),
+          ],
+        ),
       ),
     );
   }

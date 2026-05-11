@@ -3,8 +3,10 @@ import 'package:go_router/go_router.dart';
 import 'package:ionicons/ionicons.dart';
 
 import '../../../core/constants/colors.dart';
+import '../../../core/constants/assets.dart';
 import '../../../data/models/business_model.dart';
 import '../common/smart_image.dart';
+import '../common/star_rating.dart';
 
 /// Standard business listing card used across the app.
 class BusinessCard extends StatelessWidget {
@@ -74,10 +76,10 @@ class BusinessCard extends StatelessWidget {
                         color: Colors.white.withValues(alpha: 0.8),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
-                        Ionicons.heart_outline,
-                        color: Colors.black87,
-                        size: 20,
+                      child: Image.asset(
+                        AppAssets.heartIcon,
+                        width: 20,
+                        height: 20,
                       ),
                     ),
                     onPressed: onFavoriteTap,
@@ -106,11 +108,11 @@ class BusinessCard extends StatelessWidget {
                       ),
                       Row(
                         children: [
-                          const Icon(Ionicons.star, color: AppColors.starYellow, size: 16),
-                          const SizedBox(width: 4),
-                          Text(
-                            business.overallRating,
-                            style: theme.textTheme.bodyMedium?.copyWith(
+                          StarRating(
+                            rating: business.overallRating,
+                            iconSize: 16,
+                            spacing: 4,
+                            textStyle: theme.textTheme.bodyMedium?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),
                           ),

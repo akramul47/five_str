@@ -7,6 +7,8 @@ import '../../../core/constants/colors.dart';
 import '../../providers/search_provider.dart';
 import '../../providers/location_provider.dart';
 import '../../widgets/common/smart_image.dart';
+import '../../widgets/common/star_rating.dart';
+import '../../../core/constants/assets.dart';
 import '../../widgets/common/skeleton_loader.dart';
 import '../../../data/models/business_model.dart';
 import '../../../data/models/attraction_model.dart';
@@ -507,11 +509,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Ionicons.star, color: AppColors.primaryYellow, size: 12),
-                          const SizedBox(width: 2),
-                          Text(
-                            business.ratingValue.toStringAsFixed(1),
-                            style: theme.textTheme.labelSmall?.copyWith(
+                          StarRating(
+                            rating: business.ratingValue.toStringAsFixed(1),
+                            iconSize: 12,
+                            textStyle: theme.textTheme.labelSmall?.copyWith(
                               color: AppColors.secondaryOrange,
                               fontWeight: FontWeight.bold,
                             ),
@@ -578,7 +579,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     ),
                     if (attraction.isFeatured) ...[
                       const SizedBox(width: 4),
-                      const Icon(Ionicons.star, color: AppColors.primaryYellow, size: 16),
+                      Image.asset(AppAssets.starIcon, width: 16, height: 16),
                     ],
                   ],
                 ),
@@ -600,11 +601,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                       ),
                       child: Row(
                         children: [
-                          const Icon(Ionicons.star, color: AppColors.primaryYellow, size: 12),
-                          const SizedBox(width: 2),
-                          Text(
-                            attraction.ratingValue.toStringAsFixed(1),
-                            style: theme.textTheme.labelSmall?.copyWith(
+                          StarRating(
+                            rating: attraction.ratingValue.toStringAsFixed(1),
+                            iconSize: 12,
+                            textStyle: theme.textTheme.labelSmall?.copyWith(
                               color: AppColors.secondaryOrange,
                               fontWeight: FontWeight.bold,
                             ),
@@ -710,7 +710,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     ),
                     if (offering.isFeatured) ...[
                       const SizedBox(width: 4),
-                      const Icon(Ionicons.star, color: AppColors.primaryYellow, size: 16),
+                      Image.asset(AppAssets.starIcon, width: 16, height: 16),
                     ],
                   ],
                 ),

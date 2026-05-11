@@ -9,6 +9,7 @@ import '../../providers/home_provider.dart';
 import '../../../core/constants/colors.dart';
 import '../../widgets/common/skeleton_loader.dart';
 import '../../widgets/common/smart_image.dart';
+import '../../widgets/common/star_rating.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -551,15 +552,10 @@ class HomeScreen extends ConsumerWidget {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Icon(
-                          Ionicons.star,
-                          size: 11,
-                          color: AppColors.starYellow,
-                        ),
-                        const SizedBox(width: 2),
-                        Text(
-                          ratingStr,
-                          style: theme.textTheme.labelSmall?.copyWith(
+                        StarRating(
+                          rating: ratingStr,
+                          iconSize: 11,
+                          textStyle: theme.textTheme.labelSmall?.copyWith(
                             fontSize: 10,
                             fontWeight: FontWeight.w700,
                           ),
