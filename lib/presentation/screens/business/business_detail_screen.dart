@@ -548,7 +548,9 @@ class _ActionBtn extends StatelessWidget {
         child: Container(
           padding: EdgeInsets.all(padding),
           decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
+            color: Theme.of(context).brightness == Brightness.dark
+                ? Colors.white.withValues(alpha: 0.12)
+                : color.withValues(alpha: 0.1),
             shape: BoxShape.circle,
           ),
           child: assetPath != null
@@ -556,9 +558,17 @@ class _ActionBtn extends StatelessWidget {
                   assetPath!,
                   width: size,
                   height: size,
-                  color: useColorOverlay ? color : null,
+                  color: (Theme.of(context).brightness == Brightness.dark || !useColorOverlay)
+                      ? null
+                      : color,
                 )
-              : Icon(icon, color: color, size: size),
+              : Icon(
+                  icon,
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white
+                      : color,
+                  size: size,
+                ),
         ),
       ),
     );
@@ -634,7 +644,9 @@ class _FavoriteActionBtnState extends State<_FavoriteActionBtn>
         decoration: BoxDecoration(
           color: _isFavorite
               ? const Color(0xFFE53935).withValues(alpha: 0.3)
-              : AppColors.secondaryOrange.withValues(alpha: 0.10),
+              : (Theme.of(context).brightness == Brightness.dark
+                  ? Colors.white.withValues(alpha: 0.12)
+                  : AppColors.secondaryOrange.withValues(alpha: 0.10)),
           shape: BoxShape.circle,
         ),
         child: ScaleTransition(
