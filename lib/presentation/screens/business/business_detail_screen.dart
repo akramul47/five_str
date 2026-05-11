@@ -422,9 +422,9 @@ class _BusinessDetailScreenState extends ConsumerState<BusinessDetailScreen>
                     const SizedBox.shrink(),
                   Row(
                     children: [
-                      _PhoneActionBtn(phoneNumber: phoneNumber),
-                      if (phoneNumber != null && phoneNumber.isNotEmpty)
-                        const SizedBox(width: 12),
+                      // _PhoneActionBtn(phoneNumber: phoneNumber),
+                      // if (phoneNumber != null && phoneNumber.isNotEmpty)
+                      //   const SizedBox(width: 12),
                       _ActionBtn(
                         assetPath: AppAssets.locationIcon,
                         color: Colors.green,
