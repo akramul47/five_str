@@ -47,7 +47,7 @@ class BusinessRepository {
   Future<PaginatedResult<BusinessModel>> getBusinesses({
     required double latitude,
     required double longitude,
-    int radius = 10,
+    int radius = 50,
     int page = 1,
     int limit = 20,
     int? categoryId,
@@ -80,7 +80,7 @@ class BusinessRepository {
     required int categoryId,
     required double latitude,
     required double longitude,
-    int radius = 100,
+    int radius = 50,
     int page = 1,
     int perPage = 20,
     String sort = 'distance',
@@ -106,7 +106,7 @@ class BusinessRepository {
   Future<PaginatedResult<BusinessModel>> getTopRated({
     required double latitude,
     required double longitude,
-    int radius = 20,
+    int radius = 50,
     int page = 1,
     int limit = 20,
   }) async {
@@ -130,7 +130,7 @@ class BusinessRepository {
   Future<PaginatedResult<BusinessModel>> getOpenNow({
     required double latitude,
     required double longitude,
-    int radius = 10,
+    int radius = 50,
     int page = 1,
     int limit = 20,
   }) async {
@@ -154,7 +154,7 @@ class BusinessRepository {
   Future<PaginatedResult<BusinessModel>> getTrending({
     required double latitude,
     required double longitude,
-    int radius = 20,
+    int radius = 50,
     int page = 1,
     int limit = 20,
   }) async {

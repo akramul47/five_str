@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../data/repositories/home_repository.dart';
@@ -22,12 +23,13 @@ class HomeState {
     bool? isRefreshing,
     String? error,
     HomeResponse? data,
+    bool clearData = false,
   }) {
     return HomeState(
       isLoading: isLoading ?? this.isLoading,
       isRefreshing: isRefreshing ?? this.isRefreshing,
       error: error,
-      data: data ?? this.data,
+      data: clearData ? null : (data ?? this.data),
     );
   }
 }
@@ -41,15 +43,6 @@ class HomeNotifier extends StateNotifier<HomeState> {
   }
 
   void _init() {
-    _ref.listen<LocationState>(locationProvider, (previous, next) {
-      // If location finishes loading or coordinates change, fetch new data
-      if (!next.isLoading &&
-          (previous?.isLoading == true ||
-              previous?.apiCoordinates != next.apiCoordinates)) {
-        loadData(isRefresh: true);
-      }
-    });
-
     final location = _ref.read(locationProvider);
     if (!location.isLoading) {
       loadData();
@@ -60,15 +53,20 @@ class HomeNotifier extends StateNotifier<HomeState> {
     if (isRefresh) {
       state = state.copyWith(isRefreshing: true, error: null);
     } else {
-      state = state.copyWith(isLoading: true, error: null);
+      // Clear old data so the shimmer skeleton shows for the new location
+      state = state.copyWith(isLoading: true, error: null, clearData: true);
     }
 
     try {
       final location = _ref.read(locationProvider).apiCoordinates;
+      debugPrint('HomeNotifier: Loading data for ${location.latitude}, ${location.longitude}');
+      
       final data = await _repository.getHomeData(
         latitude: location.latitude,
         longitude: location.longitude,
       );
+      
+      debugPrint('HomeNotifier: Received ${data.popularNearby.length} nearby businesses');
       state = state.copyWith(
         isLoading: false,
         isRefreshing: false,

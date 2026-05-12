@@ -48,7 +48,7 @@ class HomeRepository {
   Future<HomeResponse> getHomeData({
     required double latitude,
     required double longitude,
-    int radius = 10,
+    int radius = 50,
   }) async {
     try {
       final response = await _client.get(
@@ -111,7 +111,7 @@ class HomeRepository {
   Future<List<CategoryModel>> getTopServicesWithLocation({
     required double latitude,
     required double longitude,
-    int radius = 15,
+    int radius = 50,
     int limit = 50,
   }) async {
     try {
@@ -185,7 +185,7 @@ class HomeRepository {
   Future<List<BusinessModel>> getPopularNearby({
     required double latitude,
     required double longitude,
-    int radius = 10,
+    int radius = 50,
     int limit = 20,
     int page = 1,
   }) async {
@@ -273,7 +273,7 @@ class HomeRepository {
     required double longitude,
     int page = 1,
     int perPage = 20,
-    int radius = 100,
+    int radius = 50,
   }) async {
     try {
       final response = await _client.get(

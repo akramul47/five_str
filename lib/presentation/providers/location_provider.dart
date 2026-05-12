@@ -26,17 +26,19 @@ class LocationState {
     bool? isUpdating,
     String? error,
     bool clearManual = false,
+    bool clearError = false,
   }) {
     return LocationState(
       location: location ?? this.location,
-      manualLocation: clearManual ? null : (manualLocation ?? this.manualLocation),
+      manualLocation:
+          clearManual ? null : (manualLocation ?? this.manualLocation),
       isLoading: isLoading ?? this.isLoading,
       isUpdating: isUpdating ?? this.isUpdating,
-      error: error,
+      error: clearError ? null : error,
     );
   }
 
-  /// Get coordinates for API calls (manual > GPS > default).
+  /// Coordinates used for API calls: manual > GPS > Chittagong default.
   ({double latitude, double longitude}) get apiCoordinates {
     if (manualLocation != null) {
       return (
@@ -50,10 +52,19 @@ class LocationState {
     return (latitude: 22.3569, longitude: 91.7832); // Chittagong default
   }
 
-  /// Human-readable location name.
+  /// Human-readable location name shown in the header.
+  /// Prefers manual name → GPS nearest-district name → "Chittagong" fallback.
   String get locationName {
     if (manualLocation != null) return manualLocation!.name;
-    return 'Current Location';
+    if (location?.areaName != null) return location!.areaName!;
+    return 'Chittagong';
+  }
+
+  /// Division sub-label (shown only when a district is resolved).
+  String? get divisionName {
+    if (manualLocation != null) return manualLocation!.division;
+    if (location?.divisionName != null) return location!.divisionName;
+    return null;
   }
 
   bool get isManual => manualLocation != null;
@@ -62,8 +73,7 @@ class LocationState {
 class LocationNotifier extends StateNotifier<LocationState> {
   final LocationService _locationService;
 
-  LocationNotifier(this._locationService)
-      : super(const LocationState()) {
+  LocationNotifier(this._locationService) : super(const LocationState()) {
     _initialize();
   }
 
@@ -73,31 +83,46 @@ class LocationNotifier extends StateNotifier<LocationState> {
       final location = await _locationService.initialize();
       state = state.copyWith(location: location, isLoading: false);
     } catch (e) {
-      state = state.copyWith(
-        isLoading: false,
-        error: 'Failed to get location',
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
+  /// Request GPS update with full permission handling.
+  Future<LocationUpdateResult> requestLocationUpdate() async {
+    state = state.copyWith(isUpdating: true, clearError: true);
+    try {
+      final result = await _locationService.requestLocationUpdate();
+
+      if (result.success && result.location != null) {
+        state = state.copyWith(
+          location: result.location,
+          isUpdating: false,
+          clearManual: true,
+        );
+      } else if (result.permissionStatus ==
+          LocationPermissionStatus.outsideBangladesh) {
+        // Outside BD — clear manual, keep default coordinates
+        state = state.copyWith(isUpdating: false, clearManual: true);
+      } else {
+        state = state.copyWith(isUpdating: false, error: result.message);
+      }
+
+      return result;
+    } catch (e) {
+      state = state.copyWith(isUpdating: false, error: e.toString());
+      return LocationUpdateResult(
+        success: false,
+        message: 'Unexpected error: $e',
+        permissionStatus: LocationPermissionStatus.unknownError,
       );
     }
   }
 
-  /// Force refresh GPS.
-  Future<void> refreshLocation() async {
-    state = state.copyWith(isUpdating: true, clearManual: true);
-    try {
-      final location = await _locationService.refreshLocation();
-      state = state.copyWith(location: location, isUpdating: false);
-    } catch (e) {
-      state = state.copyWith(isUpdating: false);
-    }
-  }
-
-  /// Set manual location (district picker).
   void setManualLocation(ManualLocation manual) {
     _locationService.setManualLocation(manual);
     state = state.copyWith(manualLocation: manual);
   }
 
-  /// Clear manual location, revert to GPS.
   void clearManualLocation() {
     _locationService.clearManualLocation();
     state = state.copyWith(clearManual: true);

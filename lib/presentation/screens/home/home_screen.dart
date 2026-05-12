@@ -6,19 +6,42 @@ import 'package:ionicons/ionicons.dart';
 
 import '../../../data/models/category_model.dart';
 import '../../providers/home_provider.dart';
+import '../../providers/location_provider.dart';
 import '../../../core/constants/colors.dart';
 import '../../widgets/common/skeleton_loader.dart';
 import '../../widgets/common/smart_image.dart';
 import '../../widgets/common/star_rating.dart';
+import '../../widgets/common/location_header.dart';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  @override
+  Widget build(BuildContext context) {
     final homeState = ref.watch(homeProvider);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+
+    // ── Location Change Listener ──
+    // This triggers whenever the location state changes significantly.
+    // ref.listen is more reliable than manual listeners for reacting to state.
+    ref.listen<LocationState>(locationProvider, (previous, next) {
+      if (next.isLoading) return; // Ignore initialisation phase
+
+      final coordinatesChanged = previous?.apiCoordinates != next.apiCoordinates;
+      final gpsUpdateCompleted = previous?.isUpdating == true && !next.isUpdating;
+      final initialLoad = previous?.isLoading == true && !next.isLoading;
+
+      if (coordinatesChanged || gpsUpdateCompleted || initialLoad) {
+        // Trigger a full reload (which clears old data and shows shimmer)
+        ref.read(homeProvider.notifier).loadData();
+      }
+    });
 
     final hasNoData =
         !homeState.isLoading &&
@@ -39,63 +62,50 @@ class HomeScreen extends ConsumerWidget {
               child: SafeArea(
                 bottom: false,
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      // ── Location + Notification row ──
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          Row(
-                            children: [
-                              Icon(
-                                Ionicons.location,
-                                color: AppColors.primaryYellow,
-                                size: 14,
+                          // Tappable location widget
+                          const Expanded(child: LocationHeader()),
+
+                          // Notification button
+                          Container(
+                            decoration: BoxDecoration(
+                              color: isDark ? AppColors.darkSurface : Colors.white,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                if (!isDark)
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.05),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  ),
+                              ],
+                            ),
+                            child: IconButton(
+                              icon: Icon(
+                                Ionicons.notifications_outline,
+                                color: isDark ? AppColors.white : AppColors.deepNavy,
                               ),
-                              const SizedBox(width: 4),
-                              Text(
-                                'Current Location',
-                                style: theme.textTheme.labelMedium?.copyWith(
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.w700,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Find Your Favorite Places',
-                            style: theme.textTheme.headlineSmall?.copyWith(
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: -0.5,
-                              fontSize: 22,
+                              onPressed: () => context.push('/notifications'),
                             ),
                           ),
                         ],
                       ),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: isDark ? AppColors.darkSurface : Colors.white,
-                          shape: BoxShape.circle,
-                          boxShadow: [
-                            if (!isDark)
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.05),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                          ],
-                        ),
-                        child: IconButton(
-                          icon: Icon(
-                            Ionicons.notifications_outline,
-                            color: isDark
-                                ? AppColors.white
-                                : AppColors.deepNavy,
-                          ),
-                          onPressed: () => context.push('/notifications'),
+                      const SizedBox(height: 10),
+
+                      // ── Page title ──
+                      Text(
+                        'Find Your Favorite Places',
+                        style: theme.textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: -0.5,
+                          fontSize: 22,
                         ),
                       ),
                     ],

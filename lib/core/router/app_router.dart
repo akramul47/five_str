@@ -20,6 +20,7 @@ import '../../presentation/screens/notification/notifications_screen.dart';
 import '../../presentation/screens/top_services/top_services_screen.dart';
 import '../../presentation/screens/business_list/business_list_screen.dart';
 import '../../presentation/providers/business_list_provider.dart';
+import '../../presentation/screens/location/location_selection_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
@@ -129,6 +130,11 @@ final routerProvider = Provider<GoRouter>((ref) {
             subtitle: subtitle,
           );
         },
+      ),
+      GoRoute(
+        path: '/location-selection',
+        parentNavigatorKey: _rootNavigatorKey,
+        builder: (context, state) => const LocationSelectionScreen(),
       ),
     ],
   );

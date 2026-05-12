@@ -70,7 +70,7 @@ class SearchRepository {
     required String query,
     double? latitude,
     double? longitude,
-    int radius = 20,
+    int radius = 50,
     String type = 'all',
     int? categoryId,
     double? minRating,
