@@ -308,36 +308,42 @@ class LocationService {
 
   /// High accuracy (20 s) → medium accuracy (15 s) fallback.
   Future<Position> _fetchPosition() async {
-    // 1. Try last known position first (nearly instant)
+    // 1. Try last known position first (instant)
     final lastKnown = await Geolocator.getLastKnownPosition();
     if (lastKnown != null &&
         AppConfig.isInBangladesh(lastKnown.latitude, lastKnown.longitude)) {
-      // If it's reasonably fresh (last 1 min), return it immediately
+      // If it's reasonably fresh (last 5 mins), return it immediately
+      // This prevents unnecessary waiting on first boot
       final age = DateTime.now().difference(lastKnown.timestamp).inMinutes;
-      if (age < 1) return lastKnown;
+      if (age < 5) {
+        debugPrint('LocationService: Using fresh cached position (Age: $age min)');
+        return lastKnown;
+      }
     }
 
     // 2. Try fresh High Accuracy fix
     try {
+      debugPrint('LocationService: Requesting High Accuracy fix...');
       return await Geolocator.getCurrentPosition(
         locationSettings: _highAccuracy,
       ).timeout(
-        const Duration(seconds: 15), // Reduced from 20 for better responsiveness
-        onTimeout: () => throw const _LocationTimeoutException(),
+        const Duration(seconds: 25), // Increased for cold fixes
       );
-    } on _LocationTimeoutException {
-      rethrow;
-    } catch (_) {
-      // High accuracy failed — try medium
+    } catch (e) {
+      debugPrint('LocationService: High Accuracy failed/timed out ($e). Falling back to Medium...');
     }
 
     // 3. Fallback to Medium Accuracy fix
-    return Geolocator.getCurrentPosition(
-      locationSettings: _mediumAccuracy,
-    ).timeout(
-      const Duration(seconds: 10), // Reduced from 15
-      onTimeout: () => throw const _LocationTimeoutException(),
-    );
+    try {
+      return await Geolocator.getCurrentPosition(
+        locationSettings: _mediumAccuracy,
+      ).timeout(
+        const Duration(seconds: 15), // Increased for reliability
+      );
+    } catch (e) {
+      debugPrint('LocationService: Medium Accuracy also failed ($e).');
+      throw const _LocationTimeoutException();
+    }
   }
 
   /// Silent GPS attempt during app init — no prompts, no errors.
