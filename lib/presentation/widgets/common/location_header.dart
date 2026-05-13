@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ionicons/ionicons.dart';
 
+import '../../../core/constants/assets.dart';
 import '../../../core/constants/colors.dart';
 import '../../providers/location_provider.dart';
 
@@ -41,12 +42,10 @@ class LocationHeader extends ConsumerWidget {
                         color: AppColors.primaryYellow,
                       ),
                     )
-                  : Icon(
-                      locationState.isManual
-                          ? Ionicons.location
-                          : Ionicons.locate_outline,
-                      color: AppColors.primaryYellow,
-                      size: 18,
+                  : Image.asset(
+                      AppAssets.locationIcon,
+                      width: 22,
+                      height: 22,
                     ),
             ),
           ),

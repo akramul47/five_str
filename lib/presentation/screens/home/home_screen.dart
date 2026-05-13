@@ -3,7 +3,7 @@ import 'package:shimmer/shimmer.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ionicons/ionicons.dart';
-
+import '../../../core/constants/assets.dart';
 import '../../../data/models/category_model.dart';
 import '../../providers/home_provider.dart';
 import '../../providers/location_provider.dart';
@@ -392,10 +392,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             children: [
               Row(
                 children: [
-                  Icon(
-                    Ionicons.location,
-                    color: AppColors.primaryYellow,
-                    size: 18,
+                  Image.asset(
+                    AppAssets.locationIcon,
+                    width: 22,
+                    height: 22,
                   ),
                   const SizedBox(width: 6),
                   Text(

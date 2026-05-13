@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ionicons/ionicons.dart';
+import 'package:shimmer/shimmer.dart';
 
 import '../../../core/constants/colors.dart';
 import '../../../core/constants/districts.dart';
@@ -138,7 +139,7 @@ class _LocationSelectionScreenState
                   ),
                 _buildGpsButton(theme, isDark),
                 const SizedBox(height: 24),
-                _buildSectionHeader(theme, 'Suggested Districts'),
+                _buildSectionHeader(theme, 'Choose from 64 Districts'),
               ],
             ),
           ),
@@ -224,100 +225,130 @@ class _LocationSelectionScreenState
       padding: const EdgeInsets.fromLTRB(16, 2, 16, 0),
       child: GestureDetector(
         onTap: _isGettingLocation ? null : _handleUseCurrentLocation,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            gradient: _isGettingLocation
-                ? null
-                : const LinearGradient(
-                    colors: [Color(0xFFFFC554), Color(0xFFFFAD1D)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-            color: _isGettingLocation
-                ? (isDark ? AppColors.darkSurface : Colors.grey.shade100)
-                : null,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: _isGettingLocation
-                ? null
-                : [
-                    BoxShadow(
-                      color: AppColors.primaryYellow.withValues(alpha: 0.35),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
+      child: Stack(
+        children: [
+          // 1. Background Card
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            height: 76, // Standard height for the location card
+            decoration: BoxDecoration(
+              gradient: _isGettingLocation
+                  ? null
+                  : const LinearGradient(
+                      colors: [Color(0xFFFFC554), Color(0xFFFFAD1D)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-                  ],
+              color: _isGettingLocation
+                  ? (isDark ? AppColors.darkSurface : Colors.grey.shade100)
+                  : null,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: _isGettingLocation
+                  ? null
+                  : [
+                      BoxShadow(
+                        color: AppColors.primaryYellow.withValues(alpha: 0.35),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+            ),
           ),
-          child: Row(
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: _isGettingLocation
-                      ? Colors.transparent
-                      : Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12),
+
+          // 2. Full-Card Shimmer Sheen (Overlay)
+          if (_isGettingLocation)
+            Positioned.fill(
+              child: IgnorePointer(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Shimmer.fromColors(
+                    baseColor: Colors.transparent,
+                    highlightColor: isDark
+                        ? Colors.white.withValues(alpha: 0.08)
+                        : Colors.white.withValues(alpha: 0.5),
+                    period: const Duration(milliseconds: 2000),
+                    child: Container(
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
-                child: Center(
-                  child: _isGettingLocation
-                      ? SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.5,
-                            color: AppColors.primaryYellow,
+              ),
+            ),
+
+          // 3. Content Layer (Solid)
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: _isGettingLocation
+                        ? Colors.transparent
+                        : Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Center(
+                    child: _isGettingLocation
+                        ? SizedBox(
+                            width: 22,
+                            height: 22,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2.5,
+                              color: AppColors.primaryYellow,
+                            ),
+                          )
+                        : const Icon(
+                            Ionicons.locate,
+                            color: Colors.white,
+                            size: 24,
                           ),
-                        )
-                      : const Icon(
-                          Ionicons.locate,
-                          color: Colors.white,
-                          size: 24,
-                        ),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _isGettingLocation
-                          ? 'Getting your location…'
-                          : 'Use Current Location',
-                      style: theme.textTheme.bodyLarge?.copyWith(
-                        color: _isGettingLocation
-                            ? (isDark ? Colors.white54 : Colors.black45)
-                            : Colors.white,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      _isGettingLocation
-                          ? 'Please wait a moment'
-                          : 'Find my district using GPS',
-                      style: theme.textTheme.labelSmall?.copyWith(
-                        color: _isGettingLocation
-                            ? (isDark ? Colors.white24 : Colors.black26)
-                            : Colors.white.withValues(alpha: 0.8),
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
+                const SizedBox(width: 14),
+                Expanded(
+                  child: _buildGpsButtonText(theme, isDark),
                 ),
-              ),
-              if (!_isGettingLocation)
-                const Icon(
-                  Ionicons.chevron_forward,
-                  color: Colors.white,
-                  size: 20,
-                ),
-            ],
+                if (!_isGettingLocation)
+                  const Icon(
+                    Ionicons.chevron_forward,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+              ],
+            ),
+          ),
+        ],
+      ),),
+    );
+  }
+  Widget _buildGpsButtonText(ThemeData theme, bool isDark) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          _isGettingLocation ? 'Getting your location…' : 'Use Current Location',
+          style: theme.textTheme.bodyLarge?.copyWith(
+            color: _isGettingLocation
+                ? (isDark ? Colors.white54 : Colors.black45)
+                : Colors.white,
+            fontWeight: FontWeight.w800,
           ),
         ),
-      ),
+        const SizedBox(height: 2),
+        Text(
+          _isGettingLocation
+              ? 'Please wait a moment'
+              : 'Find my district using GPS',
+          style: theme.textTheme.labelSmall?.copyWith(
+            color: _isGettingLocation
+                ? (isDark ? Colors.white24 : Colors.black26)
+                : Colors.white.withValues(alpha: 0.8),
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
     );
   }
 }
