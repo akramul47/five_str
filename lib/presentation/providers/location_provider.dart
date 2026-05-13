@@ -10,6 +10,7 @@ class LocationState {
   final bool isLoading;
   final bool isUpdating;
   final String? error;
+  final int searchRadiusKm;
 
   const LocationState({
     this.location,
@@ -17,6 +18,7 @@ class LocationState {
     this.isLoading = true,
     this.isUpdating = false,
     this.error,
+    this.searchRadiusKm = 50,
   });
 
   LocationState copyWith({
@@ -25,6 +27,7 @@ class LocationState {
     bool? isLoading,
     bool? isUpdating,
     String? error,
+    int? searchRadiusKm,
     bool clearManual = false,
     bool clearError = false,
   }) {
@@ -35,6 +38,7 @@ class LocationState {
       isLoading: isLoading ?? this.isLoading,
       isUpdating: isUpdating ?? this.isUpdating,
       error: clearError ? null : error,
+      searchRadiusKm: searchRadiusKm ?? this.searchRadiusKm,
     );
   }
 
@@ -126,6 +130,10 @@ class LocationNotifier extends StateNotifier<LocationState> {
   void clearManualLocation() {
     _locationService.clearManualLocation();
     state = state.copyWith(clearManual: true);
+  }
+
+  void setSearchRadius(int radiusKm) {
+    state = state.copyWith(searchRadiusKm: radiusKm);
   }
 }
 

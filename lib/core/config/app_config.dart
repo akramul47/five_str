@@ -9,7 +9,7 @@ class AppConfig {
   // Default location: Chittagong, Bangladesh
   static const double defaultLatitude = 22.3569;
   static const double defaultLongitude = 91.7832;
-  static const int defaultRadiusKm = 10;
+  static const int defaultRadiusKm = 50;
 
   // Bangladesh geographic bounds
   static const double bdMinLat = 20.670883;

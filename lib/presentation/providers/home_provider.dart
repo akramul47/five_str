@@ -58,12 +58,15 @@ class HomeNotifier extends StateNotifier<HomeState> {
     }
 
     try {
-      final location = _ref.read(locationProvider).apiCoordinates;
-      debugPrint('HomeNotifier: Loading data for ${location.latitude}, ${location.longitude}');
+      final locationState = _ref.read(locationProvider);
+      final location = locationState.apiCoordinates;
+      final radius = locationState.searchRadiusKm;
+      debugPrint('HomeNotifier: Loading data for ${location.latitude}, ${location.longitude} (radius: ${radius}km)');
       
       final data = await _repository.getHomeData(
         latitude: location.latitude,
         longitude: location.longitude,
+        radius: radius,
       );
       
       debugPrint('HomeNotifier: Received ${data.popularNearby.length} nearby businesses');

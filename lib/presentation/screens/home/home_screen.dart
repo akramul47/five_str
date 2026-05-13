@@ -1,4 +1,6 @@
+import 'dart:ui' show lerpDouble;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -12,6 +14,7 @@ import '../../widgets/common/skeleton_loader.dart';
 import '../../widgets/common/smart_image.dart';
 import '../../widgets/common/star_rating.dart';
 import '../../widgets/common/location_header.dart';
+import '../../widgets/common/radius_selector.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -33,11 +36,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     ref.listen<LocationState>(locationProvider, (previous, next) {
       if (next.isLoading) return; // Ignore initialisation phase
 
-      final coordinatesChanged = previous?.apiCoordinates != next.apiCoordinates;
-      final gpsUpdateCompleted = previous?.isUpdating == true && !next.isUpdating;
+      final coordinatesChanged =
+          previous?.apiCoordinates != next.apiCoordinates;
+      final gpsUpdateCompleted =
+          previous?.isUpdating == true && !next.isUpdating;
       final initialLoad = previous?.isLoading == true && !next.isLoading;
+      final radiusChanged =
+          previous?.searchRadiusKm != next.searchRadiusKm;
 
-      if (coordinatesChanged || gpsUpdateCompleted || initialLoad) {
+      if (coordinatesChanged || gpsUpdateCompleted || initialLoad || radiusChanged) {
         // Trigger a full reload (which clears old data and shows shimmer)
         ref.read(homeProvider.notifier).loadData();
       }
@@ -57,127 +64,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ref.read(homeProvider.notifier).loadData(isRefresh: true),
         child: CustomScrollView(
           slivers: [
-            // ── Header ──
-            SliverToBoxAdapter(
-              child: SafeArea(
-                bottom: false,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // ── Location + Notification row ──
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          // Tappable location widget
-                          const Expanded(child: LocationHeader()),
-
-                          // Notification button
-                          Container(
-                            decoration: BoxDecoration(
-                              color: isDark ? AppColors.darkSurface : Colors.white,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                if (!isDark)
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.05),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 4),
-                                  ),
-                              ],
-                            ),
-                            child: IconButton(
-                              icon: Icon(
-                                Ionicons.notifications_outline,
-                                color: isDark ? AppColors.white : AppColors.deepNavy,
-                              ),
-                              onPressed: () => context.push('/notifications'),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
-
-                      // ── Page title ──
-                      Text(
-                        'Find Your Favorite Places',
-                        style: theme.textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.w900,
-                          letterSpacing: -0.5,
-                          fontSize: 22,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+            // ── Collapsible Header ──
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: _HomeHeaderDelegate(
+                isDark: isDark,
+                theme: theme,
+                topPadding: MediaQuery.paddingOf(context).top,
+                onNotificationTap: () => context.push('/notifications'),
+                onSearchTap: () => context.push('/search'),
+                onRadiusTap: () => _openRadiusSelector(context, ref, isDark),
+                searchRadius: ref.watch(locationProvider).searchRadiusKm,
               ),
             ),
 
-            // ── Search Bar ──
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: GestureDetector(
-                        onTap: () => context.push('/search'),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          height: 56,
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? AppColors.darkSurface
-                                : const Color(0xFFFFF9F2),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Ionicons.search,
-                                color: AppColors.secondaryOrange,
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Text(
-                                  'What are you looking for?',
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: isDark
-                                        ? Colors.white54
-                                        : const Color(0xFFD6C0B3),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Container(
-                      width: 56,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? AppColors.darkSurface
-                            : const Color(0xFFFFF9F2),
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: IconButton(
-                        icon: const Icon(
-                          Ionicons.options,
-                          color: AppColors.secondaryOrange,
-                        ),
-                        onPressed: () {},
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-
-            const SliverToBoxAdapter(child: SizedBox(height: 28)),
+            const SliverToBoxAdapter(child: SizedBox(height: 20)),
 
             if (hasNoData)
               SliverFillRemaining(
@@ -223,6 +124,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+  // ── Radius Selector ────────────────────────────────────────────────────────
+
+  Future<void> _openRadiusSelector(
+    BuildContext context,
+    WidgetRef ref,
+    bool isDark,
+  ) async {
+    HapticFeedback.selectionClick();
+    final currentRadius = ref.read(locationProvider).searchRadiusKm;
+    final result = await showRadiusSelectorSheet(context, currentRadius);
+    if (result != null && result != currentRadius) {
+      ref.read(locationProvider.notifier).setSearchRadius(result);
+      ref.read(homeProvider.notifier).loadData();
+    }
+  }
+
   // ── Top Services ──────────────────────────────────────────────────────────
 
   Widget _buildTopServicesSection(
@@ -249,7 +166,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               GestureDetector(
                 onTap: () => context.push('/top-services'),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.secondaryOrange.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
@@ -392,11 +312,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             children: [
               Row(
                 children: [
-                  Image.asset(
-                    AppAssets.locationIcon,
-                    width: 22,
-                    height: 22,
-                  ),
+                  Image.asset(AppAssets.locationIcon, width: 22, height: 22),
                   const SizedBox(width: 6),
                   Text(
                     'Popular Services Nearby',
@@ -408,13 +324,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ],
               ),
               GestureDetector(
-                onTap: () => context.push('/business-list', extra: {
-                  'slug': 'popular-nearby',
-                  'title': 'Popular Services Nearby',
-                  'subtitle': 'Highly rated businesses in your area',
-                }),
+                onTap: () => context.push(
+                  '/business-list',
+                  extra: {
+                    'slug': 'popular-nearby',
+                    'title': 'Popular Services Nearby',
+                    'subtitle': 'Highly rated businesses in your area',
+                  },
+                ),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.secondaryOrange.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
@@ -624,13 +546,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 ),
                 GestureDetector(
-                  onTap: () => context.push('/business-list', extra: {
-                    'slug': section.sectionSlug,
-                    'title': section.sectionName,
-                    'subtitle': '${section.count} businesses',
-                  }),
+                  onTap: () => context.push(
+                    '/business-list',
+                    extra: {
+                      'slug': section.sectionSlug,
+                      'title': section.sectionName,
+                      'subtitle': '${section.count} businesses',
+                    },
+                  ),
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.secondaryOrange.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(20),
@@ -735,6 +663,336 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ),
     );
   }
+}
+
+// ── _HomeHeaderDelegate ───────────────────────────────────────────────────────
+
+/// Custom [SliverPersistentHeaderDelegate] for the collapsible home header.
+///
+/// Expanded:  backdrop pill (cream / dark-surface) + location row + bell icon
+///            + search bar + radius button.
+/// Collapsed: same backdrop at min-height + location row + circular search button.
+class _HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
+  const _HomeHeaderDelegate({
+    required this.isDark,
+    required this.theme,
+    required this.topPadding,
+    required this.onNotificationTap,
+    required this.onSearchTap,
+    required this.onRadiusTap,
+    required this.searchRadius,
+  });
+
+  final bool isDark;
+  final ThemeData theme;
+  final double topPadding;
+  final VoidCallback onNotificationTap;
+  final VoidCallback onSearchTap;
+  final VoidCallback onRadiusTap;
+  final int searchRadius;
+
+  // ── Sizing constants ────────────────────────────────────────────────────────
+  static const double _expandedContent = 148.0;
+  static const double _collapsedContent = 58.0;
+
+  @override
+  double get minExtent => topPadding + _collapsedContent;
+
+  @override
+  double get maxExtent => topPadding + _expandedContent;
+
+  // ── Build ───────────────────────────────────────────────────────────────────
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    // 0.0 = fully expanded, 1.0 = fully collapsed
+    final t = (shrinkOffset / (maxExtent - minExtent)).clamp(0.0, 1.0);
+    final searchOpacity = (1.0 - t * 2.5).clamp(0.0, 1.0);
+    final collapsedSearchOpacity = ((t - 0.6) / 0.4).clamp(0.0, 1.0);
+
+    // Backdrop colors
+    final backdropColor = isDark
+        ? Color.lerp(
+            AppColors.darkSurface.withValues(alpha: 0.96),
+            AppColors.darkSurface.withValues(alpha: 0.96),
+            t,
+          )!
+        : Color.lerp(
+            const Color(0xFFF4EBE1), // slightly darker warm cream
+            const Color(0xFFF4EBE1),
+            t,
+          )!;
+
+    // Bottom border radius interpolates from 28 (expanded) -> 20 (collapsed)
+    final bottomRadius = Radius.circular(lerpDouble(28, 20, t)!);
+
+    return SizedBox.expand(
+      child: Stack(
+        children: [
+          // ── Backdrop ──────────────────────────────────────────────────────
+          Positioned.fill(
+            child: ClipRRect(
+              borderRadius: BorderRadius.only(
+                bottomLeft: bottomRadius,
+                bottomRight: bottomRadius,
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: backdropColor,
+                  boxShadow: [
+                    BoxShadow(
+                      color: isDark
+                          ? Colors.black.withValues(alpha: 0.22 * (1 - t * 0.5))
+                          : Colors.black.withValues(alpha: 0.06 * (1 - t * 0.3)),
+                      blurRadius: lerpDouble(16, 8, t)!,
+                      offset: Offset(0, lerpDouble(4, 2, t)!),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // ── Content ───────────────────────────────────────────────────────
+          Positioned(
+            top: topPadding,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: SingleChildScrollView(
+                physics: const NeverScrollableScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                  // ── Row 1: Location + Bell (always visible) ──────────────
+                  SizedBox(
+                    height: _collapsedContent,
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        // Location header (tappable) — takes remaining space
+                        const Expanded(child: LocationHeader()),
+
+                        // Collapsed: round search button (fades in)
+                        if (collapsedSearchOpacity > 0)
+                          Opacity(
+                            opacity: collapsedSearchOpacity,
+                            child: GestureDetector(
+                              onTap: onSearchTap,
+                              child: Container(
+                                width: 42,
+                                height: 42,
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? AppColors.darkBackground
+                                          .withValues(alpha: 0.7)
+                                      : Colors.white.withValues(alpha: 0.85),
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    if (!isDark)
+                                      BoxShadow(
+                                        color:
+                                            Colors.black.withValues(alpha: 0.08),
+                                        blurRadius: 8,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                  ],
+                                ),
+                                child: const Icon(
+                                  Ionicons.search,
+                                  color: AppColors.secondaryOrange,
+                                  size: 20,
+                                ),
+                              ),
+                            ),
+                          ),
+
+                        // Expanded: notification bell (fades out on collapse)
+                        if (searchOpacity > 0)
+                          Opacity(
+                            opacity: searchOpacity,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? AppColors.darkBackground
+                                        .withValues(alpha: 0.6)
+                                    : Colors.white.withValues(alpha: 0.75),
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  if (!isDark)
+                                    BoxShadow(
+                                      color:
+                                          Colors.black.withValues(alpha: 0.05),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                ],
+                              ),
+                              child: IconButton(
+                                iconSize: 20,
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(
+                                  minWidth: 32,
+                                  minHeight: 32,
+                                ),
+                                icon: Icon(
+                                  Ionicons.notifications_outline,
+                                  color: isDark
+                                      ? AppColors.white
+                                      : AppColors.deepNavy,
+                                  size: 20,
+                                ),
+                                onPressed: onNotificationTap,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+
+                  // ── Row 2: Search bar + Radius (fades away on collapse) ──
+                  if (searchOpacity > 0) ...[
+                    const SizedBox(height: 8),
+                    Opacity(
+                      opacity: searchOpacity,
+                      child: Transform.translate(
+                        offset: Offset(0, shrinkOffset * 0.3),
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: Row(
+                            children: [
+                              // Search bar
+                              Expanded(
+                                child: GestureDetector(
+                                  onTap: onSearchTap,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 16),
+                                    height: 52,
+                                    decoration: BoxDecoration(
+                                      color: isDark
+                                          ? AppColors.darkBackground
+                                              .withValues(alpha: 0.6)
+                                          : Colors.white
+                                              .withValues(alpha: 0.75),
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color: isDark
+                                            ? AppColors.darkBorder
+                                                .withValues(alpha: 0.4)
+                                            : Colors.black
+                                                .withValues(alpha: 0.04),
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        const Icon(
+                                          Ionicons.search,
+                                          color: AppColors.secondaryOrange,
+                                          size: 19,
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Text(
+                                            'Find Your Favorite Places',
+                                            style: theme.textTheme.bodyMedium
+                                                ?.copyWith(
+                                              color: isDark
+                                                  ? Colors.white54
+                                                  : const Color(0xFFD6C0B3),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+
+                              // Radius button
+                              GestureDetector(
+                                onTap: onRadiusTap,
+                                child: Container(
+                                  width: 52,
+                                  height: 52,
+                                  decoration: BoxDecoration(
+                                    color: isDark
+                                        ? AppColors.darkBackground
+                                            .withValues(alpha: 0.6)
+                                        : Colors.white.withValues(alpha: 0.75),
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: isDark
+                                          ? AppColors.darkBorder
+                                              .withValues(alpha: 0.4)
+                                          : Colors.black
+                                              .withValues(alpha: 0.04),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      const Icon(
+                                        Ionicons.compass_outline,
+                                        color: AppColors.secondaryOrange,
+                                        size: 21,
+                                      ),
+                                      Positioned(
+                                        bottom: 5,
+                                        right: 5,
+                                        child: Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 4,
+                                            vertical: 1,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.secondaryOrange,
+                                            borderRadius:
+                                                BorderRadius.circular(5),
+                                          ),
+                                          child: Text(
+                                            '$searchRadius',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 8,
+                                              fontWeight: FontWeight.w800,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+        ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(covariant _HomeHeaderDelegate oldDelegate) =>
+      oldDelegate.isDark != isDark ||
+      oldDelegate.topPadding != topPadding ||
+      oldDelegate.searchRadius != searchRadius;
 }
 
 // ── _ServiceShimmer ───────────────────────────────────────────────────────────
