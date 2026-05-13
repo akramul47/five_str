@@ -51,7 +51,7 @@ class HomeNotifier extends StateNotifier<HomeState> {
 
   Future<void> loadData({bool isRefresh = false}) async {
     if (isRefresh) {
-      state = state.copyWith(isRefreshing: true, error: null);
+      state = state.copyWith(isRefreshing: true, isLoading: true, error: null, clearData: true);
     } else {
       // Clear old data so the shimmer skeleton shows for the new location
       state = state.copyWith(isLoading: true, error: null, clearData: true);
