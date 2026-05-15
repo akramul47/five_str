@@ -788,10 +788,13 @@ class _HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
                                 width: 42,
                                 height: 42,
                                 decoration: BoxDecoration(
-                                  color: isDark
-                                      ? AppColors.darkBackground
-                                          .withValues(alpha: 0.7)
-                                      : Colors.white.withValues(alpha: 0.85),
+                                  color: AppColors.primaryYellow.withValues(
+                                      alpha: isDark ? 0.15 : 0.08),
+                                  border: Border.all(
+                                    color: AppColors.primaryYellow.withValues(
+                                        alpha: isDark ? 0.3 : 0.15),
+                                    width: 1,
+                                  ),
                                   shape: BoxShape.circle,
                                   boxShadow: [
                                     if (!isDark)
@@ -889,6 +892,14 @@ class _HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
                                                 .withValues(alpha: 0.04),
                                         width: 1,
                                       ),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: AppColors.primaryYellow.withValues(
+                                              alpha: isDark ? 0.3 : 0.15),
+                                          blurRadius: 8,
+                                          blurStyle: BlurStyle.inner,
+                                        ),
+                                      ],
                                     ),
                                     child: Row(
                                       children: [
@@ -901,12 +912,12 @@ class _HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
                                         Expanded(
                                           child: Text(
                                             'Find Your Favorite Places',
-                                            style: theme.textTheme.bodyMedium
-                                                ?.copyWith(
-                                              color: isDark
-                                                  ? Colors.white54
-                                                  : const Color(0xFFD6C0B3),
-                                            ),
+                                              style: theme.textTheme.bodyMedium
+                                                  ?.copyWith(
+                                                color: isDark
+                                                    ? Colors.white54
+                                                    : const Color(0xFFD6C0B3),
+                                              ),
                                           ),
                                         ),
                                       ],
@@ -936,6 +947,14 @@ class _HomeHeaderDelegate extends SliverPersistentHeaderDelegate {
                                               .withValues(alpha: 0.04),
                                       width: 1,
                                     ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: AppColors.primaryYellow.withValues(
+                                            alpha: isDark ? 0.3 : 0.15),
+                                        blurRadius: 8,
+                                        blurStyle: BlurStyle.inner,
+                                      ),
+                                    ],
                                   ),
                                   child: Stack(
                                     alignment: Alignment.center,
