@@ -46,7 +46,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
       if (coordinatesChanged || gpsUpdateCompleted || initialLoad || radiusChanged) {
         // Trigger a full reload (which clears old data and shows shimmer)
-        ref.read(homeProvider.notifier).loadData();
+        ref.read(homeProvider.notifier).loadData(isRefresh: true);
       }
     });
 
@@ -136,7 +136,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final result = await showRadiusSelectorSheet(context, currentRadius);
     if (result != null && result != currentRadius) {
       ref.read(locationProvider.notifier).setSearchRadius(result);
-      ref.read(homeProvider.notifier).loadData();
+      ref.read(homeProvider.notifier).loadData(isRefresh: true);
     }
   }
 

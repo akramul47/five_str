@@ -49,6 +49,7 @@ class HomeRepository {
     required double latitude,
     required double longitude,
     int radius = 50,
+    bool bypassCache = false,
   }) async {
     try {
       final response = await _client.get(
@@ -57,7 +58,11 @@ class HomeRepository {
           'latitude': latitude,
           'longitude': longitude,
           'radius': radius,
+          if (bypassCache) 'refresh': 1,
         },
+        options: bypassCache 
+            ? Options(headers: {'Cache-Control': 'no-cache'})
+            : null,
       );
 
       debugPrint('HOME API RAW: ${response.data}');

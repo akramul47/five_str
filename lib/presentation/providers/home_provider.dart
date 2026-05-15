@@ -67,6 +67,7 @@ class HomeNotifier extends StateNotifier<HomeState> {
         latitude: location.latitude,
         longitude: location.longitude,
         radius: radius,
+        bypassCache: isRefresh,
       );
       
       debugPrint('HomeNotifier: Received ${data.popularNearby.length} nearby businesses');

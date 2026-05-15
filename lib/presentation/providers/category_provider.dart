@@ -161,7 +161,7 @@ class CategoryNotifier extends StateNotifier<CategoryState> {
 
 // ── Provider ──────────────────────────────────────────────────────────────────
 
-final categoryProvider = StateNotifierProvider.family<CategoryNotifier,
+final categoryProvider = StateNotifierProvider.autoDispose.family<CategoryNotifier,
     CategoryState, int>((ref, categoryId) {
   return CategoryNotifier(
     ref.read(businessRepositoryProvider),

@@ -218,7 +218,7 @@ class BusinessListNotifier extends StateNotifier<BusinessListState> {
 
 // ── Provider ──────────────────────────────────────────────────────────────────
 
-final businessListProvider = StateNotifierProvider.family<
+final businessListProvider = StateNotifierProvider.autoDispose.family<
     BusinessListNotifier, BusinessListState, BusinessListType>(
   (ref, type) => BusinessListNotifier(
     ref.read(businessRepositoryProvider),
