@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "name": "five_str (Flutter M2012K10C)",
+            "program": "lib/main.dart",
+            "deviceId": "kr4hgmwcmrmjpj5x",
+            "request": "launch",
+            "type": "dart",
+            "args": [
+                "--enable-impeller"
+            ]
+        }
+    ]
+}
