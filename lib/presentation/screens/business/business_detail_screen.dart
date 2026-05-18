@@ -128,7 +128,6 @@ class _BusinessDetailScreenState extends ConsumerState<BusinessDetailScreen>
       }
     }
 
-    final phoneNumber = detail?.businessPhone;
     final catName = displayData?.category?.name ?? displayData?.categoryName;
     final priceRange = displayData?.priceRange ?? 0;
     final totalReviews = displayData?.totalReviews;
@@ -523,30 +522,27 @@ class _ActionBtn extends StatelessWidget {
   final String? assetPath;
   final Color color;
   final VoidCallback? onTap;
-  final double opacity;
-  final double size;
-  final double padding;
-  final bool useColorOverlay;
 
   const _ActionBtn({
     this.icon,
     this.assetPath,
     required this.color,
     this.onTap,
-    this.opacity = 1.0,
-    this.size = 22.0,
-    this.padding = 10.0,
-    this.useColorOverlay = false,
   }) : assert(icon != null || assetPath != null);
 
   @override
   Widget build(BuildContext context) {
+    const opacity = 1.0;
+    const size = 22.0;
+    const padding = 10.0;
+    const useColorOverlay = false;
+
     return GestureDetector(
       onTap: onTap,
       child: Opacity(
         opacity: opacity,
         child: Container(
-          padding: EdgeInsets.all(padding),
+          padding: const EdgeInsets.all(padding),
           decoration: BoxDecoration(
             color: Theme.of(context).brightness == Brightness.dark
                 ? Colors.white.withValues(alpha: 0.12)

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:ionicons/ionicons.dart';
 
 import '../../../../core/constants/colors.dart';
 import '../../../../data/models/offering_model.dart';

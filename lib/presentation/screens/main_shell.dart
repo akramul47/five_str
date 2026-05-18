@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:ionicons/ionicons.dart';
 
 import '../../core/constants/colors.dart';
-import '../../core/constants/assets.dart';
 
 /// Main shell with custom floating bottom navigation pill.
 class MainShell extends StatelessWidget {

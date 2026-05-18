@@ -111,7 +111,6 @@ class _LocationSelectionScreenState
 
   @override
   Widget build(BuildContext context) {
-    final state = ref.watch(locationProvider);
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     final bgColor = isDark ? AppColors.darkBackground : AppColors.lightBackground;

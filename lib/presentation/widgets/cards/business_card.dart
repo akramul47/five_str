@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:ionicons/ionicons.dart';
 
-import '../../../core/constants/colors.dart';
 import '../../../core/constants/assets.dart';
 import '../../../data/models/business_model.dart';
 import '../common/smart_image.dart';
