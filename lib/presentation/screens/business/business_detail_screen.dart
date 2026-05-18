@@ -535,7 +535,6 @@ class _ActionBtn extends StatelessWidget {
     const opacity = 1.0;
     const size = 22.0;
     const padding = 10.0;
-    const useColorOverlay = false;
 
     return GestureDetector(
       onTap: onTap,
@@ -554,9 +553,7 @@ class _ActionBtn extends StatelessWidget {
                   assetPath!,
                   width: size,
                   height: size,
-                  color: (Theme.of(context).brightness == Brightness.dark || !useColorOverlay)
-                      ? null
-                      : color,
+                  color: null,
                 )
               : Icon(
                   icon,
