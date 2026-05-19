@@ -299,7 +299,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             (state.isRefreshing &&
                 (state.data == null || state.data!.popularNearby.isEmpty)))
           SizedBox(
-            height: 190,
+            height: 192,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -308,7 +308,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 padding: EdgeInsets.only(right: 12),
                 child: SkeletonLoader(
                   width: 150,
-                  height: 190,
+                  height: 192,
                   borderRadius: 16,
                 ),
               ),
@@ -316,14 +316,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           )
         else if (state.data != null)
           SizedBox(
-            height: 190,
+            height: 192,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: state.data!.popularNearby.length,
               itemBuilder: (_, index) {
                 final biz = state.data!.popularNearby[index];
-                return NearbyCard(business: biz, isDark: isDark);
+                return NearbyCard(business: biz, isDark: isDark, index: index);
               },
             ),
           ),
@@ -394,14 +394,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           const SizedBox(height: 14),
           SizedBox(
-            height: 190,
+            height: 192,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: businesses.length,
               itemBuilder: (_, index) {
                 final biz = businesses[index];
-                return NearbyCard(business: biz, isDark: isDark);
+                return NearbyCard(business: biz, isDark: isDark, index: index);
               },
             ),
           ),
